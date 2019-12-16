@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link rel="stylesheet" href="./styles/normalize.css">
+    <link rel="stylesheet" href="./styles/navbar.css">
+    <link rel="stylesheet" href="./styles/grid.css">
+    <link rel="stylesheet" href="./styles/utility.css">
+    <link rel="stylesheet" href="./styles/footer.css">
+    <link rel="stylesheet" href="./styles/home.css">
+    <link rel="stylesheet" href="./styles/fontello.css">
+    <title>Dev Sang's Blog</title>
+</head>
+<body>
+    <div class="front-page">
+        <header>
+            <nav class="navbar">                
+                <div class="navbar-container">
+                    <div class="hamburger">
+                        <div id="line1" class="line"></div>
+                        <div id="line2" class="line"></div>
+                        <div id="line3" class="line"></div>
+                    </div>
+                    
+                    <div class="navbar-left">
+                        <ul>
+                            <li id="logo" class="navbar-item"></li>
+                        </ul>
+                    </div>
+                    
+                    <div class="navbar-right">
+                        <ul>
+                            <li id="profile" class="navbar-item"><a href="">About Myself</a></li>
+                            <li id="services" class="navbar-item"><a href="">Tools I Use</a></li>
+                            <li id="projects" class="navbar-item"><a href="">Projects</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </nav>
+        </header>
+        <section id="front-page-showcase">
+            <div class="container">
+                <div class="text one-half column-static-800">
+                    <h1>Dev Sang</h1>
+                    <p>Web development, UI/UX design, and much more </p>
+                </div>
+                <div class="image one-half column-static-800">
+                    <img src="./assets/images/Covernoback.png" alt="">
+                </div>
+            </div>
+        </section>
+        <img src="./assets/images/Covernoback.png" alt="">          
+    </div>
+    <main>
+        <section class="profile">
+            <div class="container">
+                <div class="image one-half column-800">
+                    <img src="./assets/images/circuit.png" alt="">
+                </div>
+                <div class="text one-half column-800">
+                    <h1>About Myself.</h1>
+                    <h2>Sang Han</h2>
+                    <p>Electrical & Computer Engineering Major at Seoul National University</p>
+                    <div class="social-media">
+                        <a href="#"><i class="icon-github-circled"></i></a>
+                        <a href="#"><i class="icon-instagram"></i></a>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <section class="services">
+            <h2>Tools I Use</h2>
+            <div class="container">
+                <div id="webdev" class="one-third column-800">
+                    <h3>Web development</h3>
+                    <h4>Frontend</h4>
+                    <div class="logos">
+                        <img src="./assets/images/html5.png" alt="" class="logo">
+                        <img src="./assets/images/css3.png" alt="" class="logo">
+                        <img src="./assets/images/js.png" alt="" class="logo">
+                        <img src="./assets/images/react.png" alt="" class="logo">
+                        <img src="./assets/images/babel.png" alt="" class="logo">
+                        <img src="./assets/images/webpack.png" alt="" class="logo">
+                    </div>
+                    <h4>Backend</h4>
+                    <div class="logos">
+                        <img src="./assets/images/python.png" alt="" class="logo">
+                        <img src="./assets/images/flask.png" alt="" class="logo">
+                    </div>
+                </div>
+                <div id="design" class="one-third column-800">
+                    <h3>UI/UX Design</h3>
+                    <div class="logos">                        
+                        <ul>
+                            <li class="clear">
+                                <img src="./assets/images/affinity-photo.png" alt="" class="logo">
+                                <span>Affinity Photo</span>  
+                            </li>
+                            <li class="clear">
+                                <img src="./assets/images/affinity-designer.png" alt="" class="logo">
+                                <span>Affinity Designer</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                <div id="programming" class="one-third column-800">
+                    <h3>General Programming</h3>
+                    <h4>Experienced in these languages</h4>
+                    <div class="logos">
+                        <img src="./assets/images/cplusplus.png" alt="" class="logo">
+                        <img src="./assets/images/java.png" alt="" class="logo">
+                        <img src="./assets/images/js.png" alt="" class="logo">
+                        <img src="./assets/images/python.png" alt="" class="logo">
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="projects">
+            <h1>My Projects</h1>
+            <div class="container">
+                <div class="image one-half column-800">
+                    <img src="./assets/images/changjomunhak.png" alt="">
+                </div>
+                <div class="text one-half column-800">
+                    <h2>Website for a local business</h2>
+                    <h3>#webdev</h3>
+                    <a href="http://changjomunhak.com">www.changjomunhak.com</a>
+                    <ul>
+                        <li>
+                            <i class="icon-right-open"></i> Used vanilla javascript for client side UI and built backend server with flask.
+                        </li>
+                        <li>    
+                            <i class="icon-right-open"></i> Deployed on a digital ocean VPS with NGINX.
+                        </li>
+                        <li>
+                            <i class="icon-right-open"></i> Temporarily uses sqlite3 as database. Will be migrated to Postgresql.
+                        </li>
+
+                    </ul>
+                    <div class="buttons">
+                        <form action="#" method="GET"><button class="button-warning">Source Code <i class="icon-angle-circled-right"></i> </button></form>
+                        <form action="http://changjomunhak.com" method="GET"><button class="button-danger">Live Demo <i class="icon-angle-circled-right"></i> </button></form>
+                    </div>
+                </div>
+            </div>  
+            <div class="container">
+                <div class="image one-half column-800">
+                    <img src="./assets/images/puzzlebubble.png" alt="">
+                </div>
+                <div class="text one-half column-800">
+                    <h2>Web Assembly & Functional Programming Demo</h2>
+                    <h3>#programming, #webdev</h3>
+                    <ul>
+                        <li>
+                            <i class="icon-right-open"></i> Simple bubble shooter game written in C++ and openGL.     
+                        </li>
+                        <li>    
+                            <i class="icon-right-open"></i> Only used functional programming paradigms.
+                        </li>
+                        <li>
+                            <i class="icon-right-open"></i> Compiled to web assembly to be played inside the browser.
+                        </li>
+                    </ul>
+                    <div class="buttons">
+                        <form action="#" method="GET"><button class="button-warning">Source Code <i class="icon-angle-circled-right"></i> </button></form>
+                        <form action="http://changjomunhak.com" method="GET"><button class="button-danger">Live Demo <i class="icon-angle-circled-right"></i> </button></form>
+                    </div>
+                </div>
+            </div>   
+        </section>
+
+    </main>
+    <footer style="height: 100px; background: grey">
+
+    </footer>
+    <script src="./scripts/hamburger.js"></script>
+    <script src="./scripts/scroll.js"></script>
+</body>
+</html>
