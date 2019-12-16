@@ -8,7 +8,6 @@
 html {
     /* font-size set to 62.5% so that 1rem = 10px */
     font-size: 62.5%;
-    scroll-behavior: smooth;
 }
 
 body {

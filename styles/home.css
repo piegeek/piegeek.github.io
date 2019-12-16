@@ -27,7 +27,7 @@ main {
 }
 
 #front-page-showcase {
-    margin: 0 10px;
+    margin: 70px 10px;
     border: 3px red solid;
     height: calc(100vh - 80px);
 
@@ -75,6 +75,7 @@ main {
     
     #front-page-showcase {
         width: 85%;
+        margin-top: 0;
         height: 600px;  
         border: 3px red solid;
         position: absolute;
@@ -134,10 +135,6 @@ main {
     border: 3px red solid;
 }
 
-.profile .image {
-    height: 100%;
-}
-
 .profile .image img {
     max-width: 70%;
     position: relative;
@@ -189,35 +186,59 @@ main {
         margin-right: 33%;
         margin-left: 2%;
         width: 65%;
-        height: 65%;
+        height: 75%;
+        top: 50%;
+        transform: translate(0, -50%);
+    }
+
+    .profile .image {
+        position: relative;
         top: 50%;
         transform: translate(0, -50%);
     }
 
     .profile .image img {
-        max-width: 90%;
-        /* position: relative; */
+        max-width: 100%;
+    }
+
+    .profile .text {
         top: 50%;
         transform: translate(0, -50%);
     }
 
-    .profile .text {
-        /* position: relative; */
-        top: 50%;
-        transform: translate(0, -50%);
-        /* padding: 20px; */
+    .profile .text h1 {
+        font-size: 30px;
+    }
+
+    .profile .text h2 {
+        font-size: 42px;
+    }
+
+    .profile .text p {
+        font-size: 18px;
     }
 }
 
 @media screen and (min-width: 1280px) {
+    .profile .container {
+        height: 65%;
+    }
+
+    .profile .image img {
+        max-width: 90%;
+    }
+    
     .profile .text h1 {
         font-size: 40px;
         line-height: 60px;
     }
     
     .profile .text h2 {
-        margin-top: 10px;
         font-size: 60px;
+    }
+
+    .profile .text p {
+        font-size: 20px;
     }
 }
 /* End Profile Section */
@@ -299,6 +320,10 @@ main {
     position: relative;
     height: 60px;
     white-space: nowrap;
+    margin-left: calc(50% - 100px);
+    margin-right: calc(50% - 100px);
+    margin: 10px calc(50% - 100px);
+    text-align: left;
 }
 
 .services #design span {
@@ -323,11 +348,10 @@ main {
         margin-top: 0;
     }
 }
-
 /* End Services Section */
 
-/* Projects Section */
 
+/* Projects Section */
 .projects {
     background-color: #222222;
     padding: 10px;
@@ -411,10 +435,6 @@ main {
         margin-right: 2%;
     }
 
-    .projects .text h2 {
-        font-size: 45px;
-    }
-
     .projects .buttons {
         white-space: nowrap;
     }
@@ -423,11 +443,16 @@ main {
         display: inline;
         margin-left: 5px;
     }
+
+    .projects .buttons button {
+        padding: 0 13px;
+    }
 }
 
 @media screen and (min-width: 1280px) {    
     .projects .text h2 {
-        font-size: 40px;
+        /* font-size: 40px; */
+        font-size: 45px;
     }
 
     .projects .container {

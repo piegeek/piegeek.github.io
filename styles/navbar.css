@@ -1,7 +1,15 @@
 /* Navbar */
+.navbar {
+    height: 70px;
+    position: fixed;
+    width: 100%;
+    background: rgba(34,34,34,0.7);
+    z-index: 10;
+}
+
 .navbar-container {
     /* If changed, also change line-height of navbar-item to match this height */
-    height: 70px;
+    height: 100%;
     position: relative;
     margin: 0 auto;
     width: 100%;
@@ -49,9 +57,10 @@
 .navbar-item a,
 a.navbar-item {
     color: white;
-    font-size: 14px;
+    font-size: 15px;
     letter-spacing: 1px;
     display: block;
+    font-weight: 600;
 }
 
 /* Hamburger */
@@ -121,6 +130,8 @@ a.navbar-item {
     animation-name: leftfadein;
     animation-duration: 300ms;
     margin-left: 20px;
+    font-weight: 600;
+    font-size: 18px;
     animation-fill-mode: forwards;
 }
 
@@ -138,7 +149,8 @@ a.navbar-item {
 @media screen and (min-width: 800px) {
     .navbar-item a,
     a.navbar-item {
-        font-size: 16px;
+        font-size: 18px;
+        font-weight: 500;
     }
 }
 

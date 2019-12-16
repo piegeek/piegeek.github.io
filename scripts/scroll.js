@@ -1,4 +1,5 @@
-const scrollTop = document.body.scrollTop;
+const pageScrollPos = window.pageYOffset;
+const navbarHeight = 70;
 
 const navLinks = document.querySelectorAll('.navbar-item a');
 
@@ -9,9 +10,13 @@ function scrollToPos(e) {
         document.querySelector('.hamburger').classList.remove('active');
     }
 
-    const elementPos = document.querySelector(`.${this.id}`).getBoundingClientRect().top + scrollTop;
-    
-    window.scrollTo(0, elementPos);
+    const elementPos = document.querySelector(`.${this.id}`).getBoundingClientRect().top - (pageScrollPos + navbarHeight);
+
+    window.scrollBy({
+       top: elementPos,
+       left: 0,
+       behavior: 'smooth' 
+    });
 }
 
 navLinks.forEach(link => {    
