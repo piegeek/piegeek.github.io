@@ -22,5 +22,3 @@ function scrollToPos(e) {
 navLinks.forEach(link => {    
     link.addEventListener('click', scrollToPos.bind(link.parentElement));
 });
-
-console.log('hello world');
