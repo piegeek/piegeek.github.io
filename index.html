@@ -3,11 +3,189 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Sang Yeop Han's Portfolio</title>
-    <script type="module" crossorigin src="/assets/index-BuS2sRdl.js"></script>
-    <link rel="stylesheet" crossorigin href="/assets/index-BCkg7SrE.css">
+    <title>Sang Yeop Han — Portfolio</title>
+    <meta
+      name="description"
+      content="Project dashboard of Sang Yeop Han — RISC-V CPU design, a relational DBMS built from scratch, an Ethereum survey dApp and a React Native notification app."
+    />
+
+    <link rel="icon" type="image/png" href="/assets/logo_favicon.png" />
+    <link rel="apple-touch-icon" href="/assets/logo_favicon.png" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <link rel="stylesheet" href="/assets/site.css" />
+    <link rel="stylesheet" href="/assets/dbms-simulator.css" />
   </head>
   <body>
-    <div id="root"></div> <!-- 또는 src/index.js -->
+    <div class="shell">
+      <!-- ------------------------------------------------ left rail -->
+      <aside class="rail">
+        <div class="profile-card" id="profile"></div>
+      </aside>
+
+      <!-- ---------------------------------------------- dashboard -->
+      <main class="main">
+        <header class="topbar">
+          <h2 class="brand">
+            <img class="brand-logo" src="/assets/logo_favicon.png" alt="" />
+            SYH
+          </h2>
+          <span class="brand-sub">Portfolio</span>
+          <span class="topbar-spacer"></span>
+          <span class="topbar-note">Select a project to expand</span>
+        </header>
+
+        <section class="stat-strip" id="stats" aria-label="Summary"></section>
+
+        <h2 class="sr-only">Projects by year</h2>
+        <!-- The scroller's height is set by JS so the timeline is framed
+             inside the viewport and scrolls internally. -->
+        <div class="timeline-frame" id="timelineFrame">
+          <div class="timeline" id="timeline" tabindex="0"></div>
+        </div>
+
+        <footer class="foot">
+          <span>&copy; 2026 Sang Yeop Han</span>
+          <!-- <span>Built with plain HTML, CSS and JavaScript</span> -->
+        </footer>
+      </main>
+    </div>
+
+    <!-- ------------------------------------------- flip / modal layer -->
+    <div class="scrim" id="scrim" hidden></div>
+    <div
+      class="flip-stage"
+      id="flipStage"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Project detail"
+      hidden
+    ></div>
+
+    <!-- ------------------------------------------------------ lightbox -->
+    <div class="lightbox" id="lightbox" hidden>
+      <button class="lightbox-close" type="button" aria-label="Close image">&#10005;</button>
+      <img id="lightboxImg" alt="" />
+    </div>
+
+    <!-- --------------------------------------------------------------
+         Simple DBMS interactive demo. Cloned into the project detail
+         panel on open; assets/dbms-simulator.js wires it up.
+         -------------------------------------------------------------- -->
+    <template id="tpl-dbms-simulator">
+
+<div style="padding:1.25rem 0 0">
+
+<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;flex-wrap:wrap">
+  <span style="font-size:18px;font-weight:500;color:var(--color-text-primary)">Simple DBMS</span>
+  <span class="tag tag-gray">Project 1-3</span>
+  <span class="tag tag-blue">Java</span>
+  <span class="tag tag-blue">JavaCC</span>
+  <span class="tag tag-blue">Berkeley DB JE</span>
+</div>
+<p style="font-size:13px;color:var(--color-text-secondary);margin-bottom:20px;line-height:1.6">SQL parser + relational algebra engine backed by a persistent key-value store. Type a query below to trace it through the system.</p>
+
+<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px">
+  <div style="background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:10px;text-align:center">
+    <div style="font-size:20px;font-weight:500;color:var(--color-text-primary)">7</div>
+    <div style="font-size:11px;color:var(--color-text-secondary)">SQL statements</div>
+  </div>
+  <div style="background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:10px;text-align:center">
+    <div style="font-size:20px;font-weight:500;color:var(--color-text-primary)">5+</div>
+    <div style="font-size:11px;color:var(--color-text-secondary)">RA operators</div>
+  </div>
+  <div style="background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:10px;text-align:center">
+    <div style="font-size:20px;font-weight:500;color:var(--color-text-primary)">Soft</div>
+    <div style="font-size:11px;color:var(--color-text-secondary)">Delete strategy</div>
+  </div>
+  <div style="background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:10px;text-align:center">
+    <div style="font-size:20px;font-weight:500;color:var(--color-text-primary)">ACID</div>
+    <div style="font-size:11px;color:var(--color-text-secondary)">Transactions</div>
+  </div>
+</div>
+
+<div style="display:flex;border-bottom:0.5px solid var(--color-border-tertiary);margin-bottom:16px">
+  <button class="tab-btn on" id="tab-sim" onclick="switchTab('sim')">Query simulator</button>
+  <button class="tab-btn" id="tab-arch" onclick="switchTab('arch')">Architecture</button>
+  <button class="tab-btn" id="tab-delete" onclick="switchTab('delete')">Soft-delete internals</button>
+</div>
+
+<div id="pane-sim">
+  <div style="display:flex;gap:8px;margin-bottom:10px">
+    <input class="sql-input" id="sql-in" placeholder="e.g. INSERT INTO users VALUES (1, 'Alice', 2000-01-01);" onkeydown="if(event.key==='Enter')runSim()"/>
+    <button class="run-btn" onclick="runSim()">Run</button>
+  </div>
+  <div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:16px" id="examples-row"></div>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+    <div>
+      <div class="section-lbl">Execution pipeline</div>
+      <div class="card" style="padding:10px 14px" id="pipeline-box">
+        <p style="font-size:13px;color:var(--color-text-tertiary);font-style:italic">Run a query to trace execution</p>
+      </div>
+    </div>
+    <div>
+      <div class="section-lbl">Berkeley DB store (simulated)</div>
+      <div class="card" style="padding:0;overflow:hidden" id="db-box">
+        <div style="padding:8px 10px;font-size:12px;color:var(--color-text-tertiary);font-style:italic">No data yet</div>
+      </div>
+    </div>
+  </div>
+  <div id="result-box" style="margin-top:12px"></div>
+</div>
+
+<div id="pane-arch" style="display:none">
+  <div class="section-lbl" style="margin-bottom:10px">System layers</div>
+  <div style="display:flex;flex-direction:column;gap:8px">
+    <div class="card" style="border-left:3px solid var(--color-border-info);border-radius:0 var(--border-radius-md) var(--border-radius-md) 0">
+      <div style="font-size:13px;font-weight:500;color:var(--color-text-primary);margin-bottom:4px">1. SQL parser (JavaCC grammar)</div>
+      <div style="font-size:12px;color:var(--color-text-secondary)">Tokenizes stdin input, validates syntax against the LL(k) grammar, and populates typed global buffers: <code style="font-size:11px">tableSchemaBuffer</code>, <code style="font-size:11px">insertQueryBuffer</code>, <code style="font-size:11px">selectQueryBuffer</code>, <code style="font-size:11px">booleanValueExpressionBuffer</code>, <code style="font-size:11px">aliasMapBuffer</code>.</div>
+    </div>
+    <div class="card" style="border-left:3px solid #1D9E75;border-radius:0 var(--border-radius-md) var(--border-radius-md) 0">
+      <div style="font-size:13px;font-weight:500;color:var(--color-text-primary);margin-bottom:4px">2. Statement handlers</div>
+      <div style="font-size:12px;color:var(--color-text-secondary)">One handler per statement type reads from the global buffers and drives query execution. After each statement, all buffers are flushed back to their initial state to prevent cross-query contamination.</div>
+    </div>
+    <div class="card" style="border-left:3px solid var(--color-border-warning);border-radius:0 var(--border-radius-md) var(--border-radius-md) 0">
+      <div style="font-size:13px;font-weight:500;color:var(--color-text-primary);margin-bottom:4px">3. Relational algebra engine</div>
+      <div style="font-size:12px;color:var(--color-text-secondary)">Dedicated functions for each RA operator: <code style="font-size:11px">selection()</code>, <code style="font-size:11px">projection()</code>, <code style="font-size:11px">cartesianProduct()</code>, <code style="font-size:11px">rename()</code>. Composed as a pipeline to evaluate multi-table SELECT with WHERE clauses.</div>
+    </div>
+    <div class="card" style="border-left:3px solid var(--color-border-danger);border-radius:0 var(--border-radius-md) var(--border-radius-md) 0">
+      <div style="font-size:13px;font-weight:500;color:var(--color-text-primary);margin-bottom:4px">4. Berkeley DB persistence layer</div>
+      <div style="font-size:12px;color:var(--color-text-secondary)">Serialized key-value pairs written to disk via <code style="font-size:11px">storeKeyValue()</code> / <code style="font-size:11px">findKeyValue()</code>. A startup database (<code style="font-size:11px">startupDB</code>) tracks all table names, reopening them across sessions. All writes are wrapped in ACID transactions.</div>
+    </div>
+  </div>
+</div>
+
+<div id="pane-delete" style="display:none">
+  <p style="font-size:13px;color:var(--color-text-secondary);margin-bottom:16px;line-height:1.6">DELETE does not remove records from Berkeley DB. Instead it uses a soft-delete strategy: the record's value is overwritten with the sentinel <code style="font-size:12px">^@</code>, and a special <code style="font-size:12px">"deleted"</code> key accumulates all soft-deleted primary keys. Click the steps below to animate the store state.</p>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+    <div>
+      <div class="section-lbl">Steps</div>
+      <div style="display:flex;flex-direction:column;gap:2px" id="delete-steps"></div>
+    </div>
+    <div>
+      <div class="section-lbl">Berkeley DB store state</div>
+      <div class="card" style="padding:0;overflow:hidden" id="delete-db"></div>
+    </div>
+  </div>
+  <div style="margin-top:16px;background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:12px 14px">
+    <div style="font-size:12px;font-weight:500;color:var(--color-text-secondary);margin-bottom:6px">Why soft-delete?</div>
+    <div style="font-size:12px;color:var(--color-text-secondary);line-height:1.7">Berkeley DB's B-tree does not support efficient mid-tree deletion without rebalancing. Overwriting the value and tracking keys separately avoids structural churn, keeps primary key slots stable, and makes the deleted set queryable in O(1) — a deliberate trade-off of storage space for write performance.</div>
+  </div>
+</div>
+
+</div>
+
+    </template>
+
+    <script src="/assets/data.js"></script>
+    <script src="/assets/dbms-simulator.js"></script>
+    <script src="/assets/app.js"></script>
   </body>
 </html>
