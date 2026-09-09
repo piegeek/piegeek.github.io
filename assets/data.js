@@ -67,7 +67,7 @@ const PROFILE = {
 
 const STATS = [
   { value: '4', label: 'Projects' },
-  { value: '2019–2025', label: 'Span' },
+  { value: '2019–2026', label: 'Span' },
   { value: '11', label: 'Technologies' },
   { value: '~1,500', label: 'App downloads' },
 ];

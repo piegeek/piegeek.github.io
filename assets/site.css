@@ -141,7 +141,7 @@ a { color: inherit; }
   );
   z-index: -1;
   filter: blur(15px);
-  opacity: 0.3;
+  opacity: 0.35;
   animation: glow-spin 7s linear infinite;
 }
 
@@ -831,14 +831,29 @@ a.employer:focus-visible {
 }
 
 .flip-back {
+  /* Panel translucency. NOT `opacity` — that fades the whole subtree,
+     text included. Putting the alpha in the background colour instead
+     leaves every child rendering at full strength. */
+  --panel-opacity: 20%;
+
   transform: rotateY(180deg);
-  background: var(--ink-raise);
+  background: var(--ink-raise);   /* fallback where color-mix is unsupported */
+  background: color-mix(in srgb, var(--ink-raise) var(--panel-opacity), transparent);
   border: 1px solid var(--line-hi);
   border-radius: var(--r-xl);
   box-shadow: 0 30px 90px rgba(0, 0, 0, 0.6);
   display: flex;
   flex-direction: column;
   overflow: hidden;
+}
+
+/* Frost whatever shows through, so the page behind reads as texture
+   rather than as competing content. Applied only once the flip has
+   landed: backdrop-filter creates a stacking context, which can flatten
+   an in-flight preserve-3d rotation. */
+.flip-stage.is-settled .flip-back {
+  backdrop-filter: blur(20px) saturate(1.25);
+  -webkit-backdrop-filter: blur(20px) saturate(1.25);
 }
 
 /* Only allow scrolling once the flip has landed — scrolling a rotating
