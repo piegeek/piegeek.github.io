@@ -242,11 +242,18 @@ function renderTimeline() {
   scroller.appendChild(list);
 }
 
-/* Frame the timeline inside the viewport: it gets whatever vertical room
-   is left below it, and scrolls internally rather than growing the page. */
-function fitTimeline() {
-  const scroller = document.getElementById('timeline');
-  const frame = document.getElementById('timelineFrame');
+/* Frame the visible view inside the viewport: its scroller gets whatever
+   vertical room is left below it, and scrolls internally rather than
+   growing the page. Both views use the same frame/scroller markup, so
+   this fits whichever one is currently shown. */
+function fitViews() {
+  const view = document.querySelector('.view:not([hidden])');
+  if (!view) return;
+
+  const frame = view.querySelector('.timeline-frame');
+  const scroller = view.querySelector('.timeline');
+  if (!frame || !scroller) return;
+
   const foot = document.querySelector('.foot');
 
   // Offset from the top of the DOCUMENT, so the result does not change as
@@ -257,16 +264,121 @@ function fitTimeline() {
 
   const h = window.innerHeight - docTop - reserve;
   scroller.style.height = Math.max(360, Math.round(h)) + 'px';
-  markTimelineEnds();
+  markScrollEnds(scroller);
 }
 
 /* Fade hints at the edges, hidden once you reach that end. */
-function markTimelineEnds() {
-  const scroller = document.getElementById('timeline');
-  const frame = document.getElementById('timelineFrame');
+function markScrollEnds(scroller) {
+  const frame = scroller.closest('.timeline-frame');
+  if (!frame) return;
   const max = scroller.scrollHeight - scroller.clientHeight;
   frame.classList.toggle('at-top', scroller.scrollTop <= 2);
   frame.classList.toggle('at-end', scroller.scrollTop >= max - 2);
+}
+
+/* ---------------------------------------------------------- algorithms */
+
+/* Write-ups render inline rather than behind a card flip: the block
+   diagram is already interactive, and making it a modal would put three
+   levels of expansion between the reader and a box's explanation. */
+/* Prose sections, each optionally followed by side-by-side code. */
+function motivationBody(sections) {
+  const wrap = el('div', 'algo-motivation');
+  sections.forEach((sec) => {
+    if (sec.heading) wrap.appendChild(el('h4', null, sec.heading));
+    (sec.paras || []).forEach((t) => wrap.appendChild(el('p', null, t)));
+    if (sec.code) {
+      const grid = el('div', 'algo-code');
+      sec.code.forEach((c) => {
+        const fig = el('figure');
+        fig.appendChild(el('figcaption', null, c.label));
+        fig.appendChild(el('pre', null, c.src));
+        grid.appendChild(fig);
+      });
+      wrap.appendChild(grid);
+    }
+  });
+  return wrap;
+}
+
+function algorithmEntry(entry) {
+  const art = el('article', 'algo-entry');
+
+  const eyebrow = el('div', 'algo-eyebrow');
+  [entry.kind, entry.timeline].filter(Boolean).forEach((t, i) => {
+    if (i) eyebrow.appendChild(el('span', 'dot', '•'));
+    eyebrow.appendChild(el('span', null, t));
+  });
+  art.appendChild(eyebrow);
+
+  art.appendChild(el('h3', 'algo-title', entry.title));
+  if (entry.blurb) art.appendChild(el('p', 'algo-blurb', entry.blurb));
+
+  if (entry.motivation) art.appendChild(block('Motivation', motivationBody(entry.motivation)));
+
+  if (entry.tags) {
+    const tech = el('div', 'detail-tech');
+    entry.tags.forEach((t) => tech.appendChild(el('span', null, t)));
+    art.appendChild(block('Topics', tech));
+  }
+
+  // Mounted lazily by showView(), so the JSON is only fetched if the
+  // reader actually opens this section.
+  if (entry.diagram === 'greedy') art.appendChild(el('div', 'gk'));
+
+  return art;
+}
+
+function renderAlgorithms() {
+  const host = document.getElementById('algo');
+  if (!host || typeof ALGORITHMS === 'undefined') return;
+  ALGORITHMS.forEach((a) => host.appendChild(algorithmEntry(a)));
+}
+
+/* ------------------------------------------------------------- views */
+
+const VIEW_NOTE = {
+  portfolio: 'Select a project to expand',
+  algorithms: 'Click any box to expand',
+};
+
+let currentView = null;
+
+function showView(name, fromHash) {
+  if (!VIEW_NOTE[name] || name === currentView) return;
+  currentView = name;
+
+  if (typeof closeGreedySheet === 'function') closeGreedySheet();
+
+  document.querySelectorAll('.view').forEach((v) => {
+    v.hidden = v.dataset.view !== name;
+  });
+
+  document.querySelectorAll('.view-tab').forEach((t) => {
+    const on = t.dataset.view === name;
+    t.classList.toggle('is-on', on);
+    if (on) t.setAttribute('aria-current', 'true');
+    else t.removeAttribute('aria-current');
+  });
+
+  const note = document.getElementById('topbarNote');
+  if (note) note.textContent = VIEW_NOTE[name];
+
+  if (name === 'algorithms' && typeof initGreedyDiagram === 'function') {
+    initGreedyDiagram(document.querySelector('#algo .gk'));
+  }
+
+  // Keep the section linkable. replaceState rather than push, so the
+  // switcher doesn't stack a history entry per click; skipped entirely
+  // when the change came from the hash in the first place.
+  if (!fromHash) {
+    const target = name === 'algorithms'
+      ? '#algorithms'
+      : location.pathname + location.search;
+    history.replaceState(null, '', target);
+  }
+
+  fitViews();
 }
 
 /* -------------------------------------------------------------- detail */
@@ -539,9 +651,13 @@ function closeLightbox() {
 
 lightbox.addEventListener('click', closeLightbox);
 
+/* Innermost layer first: lightbox, then the diagram's explain sheet,
+   then the detail modal itself. closeGreedySheet() reports whether it
+   actually consumed the keypress. */
 document.addEventListener('keydown', (e) => {
   if (e.key !== 'Escape') return;
   if (!lightbox.hidden) closeLightbox();
+  else if (typeof closeGreedySheet === 'function' && closeGreedySheet()) return;
   else closeProject();
 });
 
@@ -550,9 +666,23 @@ document.addEventListener('keydown', (e) => {
 renderProfile();
 renderStats();
 renderTimeline();
+renderAlgorithms();
 
-fitTimeline();
-window.addEventListener('resize', fitTimeline);
-document.getElementById('timeline').addEventListener('scroll', markTimelineEnds, { passive: true });
+document.querySelectorAll('.view-tab').forEach((tab) => {
+  tab.addEventListener('click', () => showView(tab.dataset.view));
+});
+
+window.addEventListener('hashchange', () => {
+  showView(location.hash === '#algorithms' ? 'algorithms' : 'portfolio', true);
+});
+
+document.querySelectorAll('.view .timeline').forEach((scroller) => {
+  scroller.addEventListener('scroll', () => markScrollEnds(scroller), { passive: true });
+});
+
+showView(location.hash === '#algorithms' ? 'algorithms' : 'portfolio', true);
+
+fitViews();
+window.addEventListener('resize', fitViews);
 // Poppins loading changes text metrics, which changes the offset above.
-if (document.fonts && document.fonts.ready) document.fonts.ready.then(fitTimeline);
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(fitViews);

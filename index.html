@@ -21,6 +21,7 @@
 
     <link rel="stylesheet" href="/assets/site.css" />
     <link rel="stylesheet" href="/assets/dbms-simulator.css" />
+    <link rel="stylesheet" href="/assets/greedy-diagram.css" />
   </head>
   <body>
     <div class="shell">
@@ -36,19 +37,41 @@
             <img class="brand-logo" src="/assets/logo_favicon.png" alt="" />
             SYH
           </h2>
-          <span class="brand-sub">Portfolio</span>
+          <!-- Top-level section switcher. Each .view is shown one at a
+               time; assets/app.js keeps it in sync with the URL hash. -->
+          <div class="view-tabs" id="viewTabs">
+            <button class="view-tab is-on" type="button" data-view="portfolio" aria-current="true">
+              Portfolio
+            </button>
+            <button class="view-tab" type="button" data-view="algorithms">
+              Algorithms
+            </button>
+          </div>
           <span class="topbar-spacer"></span>
-          <span class="topbar-note">Select a project to expand</span>
+          <span class="topbar-note" id="topbarNote">Select a project to expand</span>
         </header>
 
-        <section class="stat-strip" id="stats" aria-label="Summary"></section>
+        <!-- ---------------------------------------------- portfolio -->
+        <section class="view" data-view="portfolio">
+          <section class="stat-strip" id="stats" aria-label="Summary"></section>
 
-        <h2 class="sr-only">Projects by year</h2>
-        <!-- The scroller's height is set by JS so the timeline is framed
-             inside the viewport and scrolls internally. -->
-        <div class="timeline-frame" id="timelineFrame">
-          <div class="timeline" id="timeline" tabindex="0"></div>
-        </div>
+          <h2 class="sr-only">Projects by year</h2>
+          <!-- The scroller's height is set by JS so the timeline is framed
+               inside the viewport and scrolls internally. -->
+          <div class="timeline-frame" id="timelineFrame">
+            <div class="timeline" id="timeline" tabindex="0"></div>
+          </div>
+        </section>
+
+        <!-- --------------------------------------------- algorithms -->
+        <!-- Filled from ALGORITHMS in assets/data.js. The greedy block
+             diagram mounts inline the first time this view is opened. -->
+        <section class="view" data-view="algorithms" hidden>
+          <h2 class="sr-only">Algorithms</h2>
+          <div class="timeline-frame">
+            <div class="timeline" id="algo" tabindex="0"></div>
+          </div>
+        </section>
 
         <footer class="foot">
           <span>&copy; 2026 Sang Yeop Han</span>
@@ -186,6 +209,7 @@
 
     <script src="/assets/data.js"></script>
     <script src="/assets/dbms-simulator.js"></script>
+    <script src="/assets/greedy-diagram.js"></script>
     <script src="/assets/app.js"></script>
   </body>
 </html>

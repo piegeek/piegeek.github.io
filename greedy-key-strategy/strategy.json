@@ -1,0 +1,512 @@
+{
+  "meta": {
+    "title": "Greedy Key Strategy",
+    "subtitle": "A derived, falsifiable decision procedure for greedy problems",
+    "intro": "Not a collection of memorised solutions. Every branch below was derived, and the intricate ones were checked against a brute-force solver before being believed. Click any box to read what that step is doing and why.",
+    "updated": "2026-09-09",
+    "standing": "Standing habit: for any nontrivial derivation, implement a brute-force or exact solver for small instances, stress-test the candidate formula over many random cases, and only then present it as correct. This has already caught off-by-one loop bounds, mis-directed inequalities, formulas that skipped required elements, and a heap-closure claim that broke under a two-line test."
+  },
+
+  "lanes": [
+    { "id": "stem", "label": "" },
+    { "id": "r1", "label": "Row 1 · order",  "note": "sequence out" },
+    { "id": "r2", "label": "Row 2 · subset", "note": "subset out" },
+    { "id": "r3", "label": "Row 3 · pair",   "note": "pairing out" },
+    { "id": "r4", "label": "Row 4 · other",  "note": "assignment out" }
+  ],
+
+  "notes": [
+    "Degrees of freedom are O(1) → nothing needs compressing. Not greedy, not row 4 — a simulation or linear-parity problem (switches-and-bulbs).",
+    "T is a data structure, or order doesn't change the value → reroute to row 2.",
+    "Two pointers lack information at a step → reroute to rows 1, 2 or 4."
+  ],
+
+  "boxes": [
+    {
+      "id": "key",
+      "lane": "stem",
+      "step": "Step 1",
+      "label": "Identify the key",
+      "sublabel": "f(k), rarely f(T, k)",
+      "summary": "The scalar you sort by. Across every worked example in all four rows, it turned out to be a pure function of the item alone — T never appears inside the key formula.",
+      "sections": [
+        {
+          "heading": "Before anything: count degrees of freedom",
+          "paras": [
+            "Fix an early choice arbitrarily. Does everything downstream become forced, no matter how large the input gets? If the free-choice space stays O(1) — switches-and-bulbs has exactly 2 candidate solutions forever, regardless of N — there is no optimisation happening and nothing needs compressing. That is outside the framework entirely, not row 4.",
+            "Row 4 in particular requires genuine, input-scaling competition among candidate constructions (2^N orientations for wallet) that a bound then rules out down to one. If the free choices scale with input size, you are in the right place."
+          ]
+        },
+        {
+          "heading": "What the key is",
+          "paras": [
+            "Greedy is DP whose search frontier provably collapses to width 1 at every layer. The key is the criterion that makes that collapse happen: sort by it and the dominant state at each layer is the only one you ever need to carry.",
+            "The strategy's own step 1 says the key is usually a function of (T, k) where T is a sufficient statistic — but in most cases it is a function of k."
+          ]
+        },
+        {
+          "heading": "The refinement that came out of the worked examples",
+          "paras": [
+            "Stronger than 'usually': the key itself is a pure function of k alone in every single verified case across all four rows. This is universal, not row-specific, and there is a structural reason — a sort key that depended on running state could not be computed before you start sorting."
+          ],
+          "list": [
+            "w_i / p_i — weighted completion time (Smith's rule)",
+            "e_i — earliest deadline (EDD)",
+            "edge weight — MST",
+            "c_i / a_i — the Lagrangian ratio",
+            "w_i, rating, jewel and job value, wallet's canonical sides"
+          ]
+        },
+        {
+          "heading": "So what is T actually for?",
+          "paras": [
+            "Two places, and only two. First, the proof that the key is correct — the swap, domination, exchange and induction arguments. Second, the runtime strategy that executes the sorted order: elapsed time, remaining capacity, arrow position, the (lo, hi) pair, DSU or heap state."
+          ]
+        },
+        {
+          "heading": "Separability — the one non-negotiable check",
+          "paras": [
+            "The decision at step k must be a function of (T, k) alone, T being some compressed, self-contained summary and k the current item's own data. No unbounded lookahead into the rest of the input. This is the single constant shared by rows 1, 2 and 3."
+          ]
+        }
+      ],
+      "watch": [
+        "If T creeps into the key formula itself, that is a sign of a wrong derivation — go back rather than patching it.",
+        "Do not trust a problem site's difficulty or category tag as evidence of fit. Joystick is filed as greedy and is not."
+      ],
+      "source": "Greedy Key Strategy step 0–1 · Foundational framing · Diagnostic funnel step 1"
+    },
+
+    {
+      "id": "shape",
+      "lane": "stem",
+      "step": "Step 2",
+      "label": "Output shape?",
+      "sublabel": "order / subset / pair / other",
+      "summary": "The triage question: is the thing you are asked to produce an order, a subset, a pairing, or an assignment? That answer picks the lane — and there are three reroutes that catch the common mis-reads.",
+      "sections": [
+        {
+          "heading": "The four shapes",
+          "list": [
+            "Row 1 — output is a sequence; cost depends on position, not just membership.",
+            "Row 2 — choose a subset of a fixed ground set under a feasibility constraint.",
+            "Row 3 — pair items from one or two pools; nothing is excluded, everything gets used.",
+            "Row 4 — every item is included but assigned or arranged; the objective is often max/min-shaped rather than a linear sum."
+          ]
+        },
+        {
+          "heading": "Early tell for row 4",
+          "paras": [
+            "If the objective is non-linear, or no numeric key is specified anywhere in the problem, suspect row 4 before you start hunting for a sort criterion."
+          ]
+        },
+        {
+          "heading": "Reroute 1 — an 'ordering' that is really a subset",
+          "paras": [
+            "If the wording sounds like 'choose an order' but you are unsure, test whether the same subset of items, scheduled in different valid orders, gives the same objective value. If yes, order is downstream bookkeeping — usually one canonical mechanical rule, like EDF sorting the chosen subset by deadline — not a trade-off you are searching over. You are in row 2 wearing a sequencing costume.",
+            "This diagnostic caught the mistake on Prim's, Huffman, meeting-room assignment and deadline scheduling, every single time it was applied."
+          ]
+        },
+        {
+          "heading": "Reroute 2 — a scalar T that isn't one",
+          "paras": [
+            "If deriving the strategy needs T to be a data structure rather than a single number, suspect row 2. Row 1's proof mechanism only closes when T is a genuine scalar."
+          ]
+        },
+        {
+          "heading": "Reroute 3 — a matching that starves",
+          "paras": [
+            "If the problem is matching-shaped but two pointers run out of information at some step, the pairing lane is wrong; go back to rows 1, 2 or 4."
+          ]
+        },
+        {
+          "heading": "The structural line between rows 1–3 and row 4",
+          "paras": [
+            "Rows 1–3 all execute by walking sequentially through sorted items, maintaining a T that evolves on prior decisions and gates future ones — real history-dependence. Row 4 has no such walk. Its bound is an unconditional aggregation applied independently to each item and combined: order-blind, embarrassingly parallel.",
+            "Verified concretely: shuffling the processing order of wallet's cards through the same formula gives byte-identical output every time, unlike balloon or scheduling algorithms where a different order can silently break correctness."
+          ]
+        }
+      ],
+      "watch": [
+        "A site's 'greedy' tag is a hint about search difficulty, not a claim about which row a problem is in.",
+        "If a problem doesn't cleanly fit any lane, say so rather than forcing a categorisation."
+      ],
+      "source": "Greedy Key Strategy step 2.1–2.4 · The four rows · Diagnostic funnel step 2"
+    },
+
+    {
+      "id": "r1-sort",
+      "lane": "r1",
+      "step": "Row 1 · derive",
+      "label": "Sort by k",
+      "sublabel": "key from k alone",
+      "summary": "Adjacent-swap domination gives you the key. Swap two neighbouring items with everything else fixed and do the algebra — what survives the subtraction is the sort criterion.",
+      "sections": [
+        {
+          "heading": "The mechanism",
+          "paras": [
+            "Propose a candidate scalar T, a compression of the prefix. Swap two adjacent items i and j, leaving everything else fixed. The algebra then tells you the key — you do not guess it and check it."
+          ]
+        },
+        {
+          "heading": "Sum-type objective",
+          "paras": [
+            "Subtract the two orderings' costs. If T cancels algebraically, what is left rearranges directly into the sort key. Weighted completion time resolves this way into Smith's rule, w_i / p_i."
+          ]
+        },
+        {
+          "heading": "Bottleneck (max / min) objective",
+          "paras": [
+            "The subtraction does not work the same way; instead reduce to comparing only the two swapped items' own terms and show one item's terms are ≤ the other's. Max lateness resolves this way into EDD, earliest-deadline-first."
+          ]
+        },
+        {
+          "heading": "Why the key is computable up front",
+          "paras": [
+            "Whatever survives the swap algebra is a function of the two items' own data, never of the running state. That is what makes it sortable before the walk begins — the same universal fact recorded at step 1."
+          ]
+        }
+      ],
+      "watch": [
+        "Do not write 'prove the greedy-choice property via the exchange argument' and stop. Every textbook does that and it explains nothing. Write the swap, write the inequality, show where it comes from.",
+        "'Built incrementally' does not mean exploration greedy. Check whether cost genuinely depends on sequence position before committing to this lane."
+      ],
+      "source": "Row 1 — Exploration/permutation greedy · second check"
+    },
+
+    {
+      "id": "r1-walk",
+      "lane": "r1",
+      "step": "Row 1 · execute",
+      "label": "Walk with T",
+      "sublabel": "scalar gate",
+      "summary": "Sort, then walk the items in order, carrying a scalar T as the feasibility gate. The trap here is a T that looks scalar at every step but cannot actually compute its own next value.",
+      "sections": [
+        {
+          "heading": "Execution",
+          "paras": [
+            "Sort by the derived key, then build the ordering, using (T scalar, k) as the feasibility check at each step. T evolves on prior decisions and gates future ones."
+          ]
+        },
+        {
+          "heading": "Two flavours of T update",
+          "list": [
+            "Additive accumulator — T += increment. Commutative, so block invariance is close to free. Elapsed time is the canonical case.",
+            "Frontier replacement — T := f(item), a conditional overwrite rather than a sum. Order-fragile: monotonicity has to be earned by the correct sort, it is not given. Balloon-arrow position is the canonical case."
+          ]
+        },
+        {
+          "heading": "Closure of T's own update",
+          "paras": [
+            "Separate from separability, and easy to miss: T_new must be computable from (T_old, item) alone, with no hidden side-memory. A decision can look scalar at every single step and still fail this.",
+            "Meeting-room assignment and the priority-queue implementation of deadline scheduling are both canonical failures. The decision reads one number, heap[0] — but maintaining that number's future value requires the full multiset underneath it, which a bare scalar throws away. Verified directly: pushing then popping a heap's minimum does not let you predict the new minimum from the old minimum and the size alone."
+          ]
+        },
+        {
+          "heading": "Two different diagnoses, don't conflate them",
+          "paras": [
+            "'T exists but isn't closed' (meeting rooms) and 'no scalar exists for the decision at all' (Machine Covering) are both real and both fatal to row 1, but they are different findings and lead different places."
+          ]
+        }
+      ],
+      "watch": [
+        "If T needs a heap, DSU or multiset to know its own next value, the fix is not to redefine T as the data structure. Suspect row 2 — that is almost always a matroid's independence check wearing row-1 clothing because the problem sounds sequential.",
+        "Row 1's swap algebra only closes when T is a genuine scalar. That is forced, not incidental: the swap has to resolve to one inequality."
+      ],
+      "source": "Greedy Key Strategy step 3.1 · Foundational framing (closure) · Diagnostic funnel step 6"
+    },
+
+    {
+      "id": "r2-matroid",
+      "lane": "r2",
+      "step": "Row 2 · test",
+      "label": "Matroid check",
+      "sublabel": "compare sizes",
+      "summary": "Test the constraint before the objective. Two greedy passes in opposite directions; if the maximal feasible sets come out different sizes, it is definitively not a matroid and you stop immediately.",
+      "sections": [
+        {
+          "heading": "Order of operations",
+          "paras": [
+            "In row 2 the second check runs on the constraint, not the objective. Validating the constraint structure is the real work; the key is often trivial once you get there."
+          ]
+        },
+        {
+          "heading": "The fast necessary test",
+          "paras": [
+            "Construct two maximal feasible sets via two different greedy orderings — one ascending pass, one descending pass — and compare their sizes. Unequal sizes means definitively not a matroid. Stop there.",
+            "This is not open-ended trial and error, and it is fast. Knapsack {1, 1, 3} at capacity 3 was ruled out in one step this way, rather than by running the algorithm and watching it fail."
+          ]
+        },
+        {
+          "heading": "If the sizes match",
+          "paras": [
+            "Equal sizes is a necessary condition passed, not a proof. The canonical next move is a DP stress test. In practice, for the difficulty band these problems show up in — easy-to-mid coding tests and competitions — this step may be omitted and the matroid assumption taken.",
+            "Where the axiom genuinely matters, it is proven once analytically via known theorems about the matroid classes. It is never checked at runtime by the data structure; the data structure only executes the resulting greedy efficiently."
+          ]
+        }
+      ],
+      "watch": [
+        "Equal sizes on two passes is evidence, not a theorem. Label an assumed matroid as assumed.",
+        "Do not test the objective first — a perfect-looking key over a non-matroid constraint is still wrong."
+      ],
+      "source": "Diagnostic funnel step 3 · Row 2 second check (1) · Greedy Key Strategy step 3.2"
+    },
+
+    {
+      "id": "r2-equal",
+      "lane": "r2",
+      "step": "Row 2 · matroid holds",
+      "label": "Sizes equal",
+      "sublabel": "add if independent",
+      "summary": "Sort by the raw objective coefficient and add each item if it keeps the set independent. Rado–Edmonds makes this exact. Which matroid you are in decides whether the independence check is a number or a data structure.",
+      "sections": [
+        {
+          "heading": "The greedy itself",
+          "paras": [
+            "Sort by the raw objective coefficient — no ratio, no transformation — and take each item in turn if adding it preserves independence. Rado–Edmonds guarantees this is exact, not approximate.",
+            "The key here is often trivial (MST edge weight, item value). That is expected: in this lane the derivation work went into the constraint, not the key."
+          ]
+        },
+        {
+          "heading": "What the independence check costs, by matroid class",
+          "list": [
+            "Uniform matroid — a plain linear budget, e.g. fractional knapsack. The check is 'does it fit in remaining capacity': a scalar, no data structure.",
+            "Graphic matroid — MST / Kruskal's. The check is 'does this edge create a cycle': needs Union-Find.",
+            "Transversal or scheduling matroid — jewel thief, deadline scheduling. The check is 'is this item still matchable against what is left': needs Union-Find or a size-bounded priority queue."
+          ]
+        },
+        {
+          "heading": "Transversal and scheduling matroids",
+          "paras": [
+            "A named, recurring special case worth recognising on sight: bipartite compatibility of the form 'weight ≤ capacity' or 'slot ≤ deadline' is a matroid. Whether you need a data structure depends on which matroid you are in, not on 'being row 2' generically."
+          ]
+        },
+        {
+          "heading": "Mirror-image implementations",
+          "paras": [
+            "Two efficient implementations of the same transversal/scheduling greedy often exist as mirror images — sort ascending vs descending, DSU searching upward vs downward, 'smallest sufficient' vs 'largest eligible'. The direction is forced by which side of the compatibility inequality is the scarce resource, and it is readable directly off the threshold before you write any code."
+          ]
+        }
+      ],
+      "watch": [
+        "The data structure is an execution detail. It never establishes the exchange axiom — that is proved once, analytically, up front.",
+        "Reaching for a heap or DSU here is normal. Reaching for one back in row 1 was the warning sign."
+      ],
+      "source": "Row 2 second check (2) · Transversal / scheduling matroids · Greedy Key Strategy step 3.2"
+    },
+
+    {
+      "id": "r2-differ",
+      "lane": "r2",
+      "step": "Row 2 · matroid fails",
+      "label": "Sizes differ",
+      "sublabel": "Lagrangian, r/c",
+      "summary": "Not a matroid. Count the binding linear constraints: one constraint gives an exact ratio key via a Lagrangian threshold argument; two or more provably give no static key at all.",
+      "sections": [
+        {
+          "heading": "One binding constraint — the Lagrangian threshold",
+          "paras": [
+            "Maximise reward subject to cost staying under a threshold. Each item's inclusion threshold is its reward-over-cost ratio, r_i / c_i (written c_i / a_i in the row-2 notes). The crucial point: ranking by that ratio is fixed regardless of the eventual multiplier λ, which is what makes this an exact key rather than a heuristic."
+          ]
+        },
+        {
+          "heading": "Execution — fractional addition allowed",
+          "paras": [
+            "Fill items completely in ratio order, take one fractional slice at the boundary, stop. Exact, and provably matches the LP relaxation."
+          ]
+        },
+        {
+          "heading": "Execution — discrete",
+          "paras": [
+            "Always use skip-and-continue: add each item in ratio order if it currently fits; if it does not, skip it and keep checking smaller-ratio items. Never stop at the first infeasible item.",
+            "Stop-at-first-miss is provably, unconditionally dominated — verified across 50,000 random instances with zero exceptions, and provable directly: both rules agree up to the first infeasible item, and past that point skip-and-continue can only find additional value, never lose any.",
+            "There is no 'try both, pick the better' branch. That framing was wrong and was corrected."
+          ]
+        },
+        {
+          "heading": "What you actually get in the discrete case",
+          "paras": [
+            "Even skip-and-continue is only a proven 2-approximation. It is exact only when the weights are equal — which is a uniform matroid in disguise, i.e. you were never really outside the matroid lane."
+          ]
+        },
+        {
+          "heading": "Two or more binding constraints",
+          "paras": [
+            "Provably no static key in general: the ranking flips with the instance-dependent ratio between multipliers. Go to matroid intersection, LP plus rounding, or DP. Do not keep hunting for a clever single ratio."
+          ]
+        }
+      ],
+      "watch": [
+        "Label the guarantee honestly. Exact for fractional; 2-approximate for discrete. General 0/1 knapsack is NP-hard and no polynomial exact greedy exists for it.",
+        "λ never has to be computed. Only the ranking it induces matters, and that ranking is λ-independent."
+      ],
+      "source": "Row 2 second check (3) · Greedy Key Strategy step 3.3"
+    },
+
+    {
+      "id": "r3-sort",
+      "lane": "r3",
+      "step": "Row 3 · derive",
+      "label": "Sort by k",
+      "sublabel": "monotone thresh",
+      "summary": "There is no (T, k) here — state is directly the two live extremal candidates. The proof runs by peeling extremes and inducting, and the two-pointer reduction is only legal if compatibility is monotone under the key.",
+      "sections": [
+        {
+          "heading": "Why this lane has no T",
+          "paras": [
+            "Row 3 has no prefix-plus-next-item structure to compress, so there is nothing for a sufficient statistic to summarise. The state is directly (item_lo, item_hi) — the two live extremal candidates. Everything else is either already paired or not yet reached."
+          ]
+        },
+        {
+          "heading": "The proof mechanism",
+          "paras": [
+            "Not adjacent-swap, not the exchange axiom: extremal peeling plus induction plus a substitution-monotonicity lemma. The load-bearing lemma is that replacing an item in a valid solution with an easier or lighter one preserves validity.",
+            "Peel off the global extreme, show which pairing dominates, then recurse on the residual."
+          ]
+        },
+        {
+          "heading": "The precondition for two pointers",
+          "paras": [
+            "Sort plus two pointers is legal only when compatibility is a monotonic threshold under the sort key — that is, the compatible partners of any item form a prefix or suffix of sorted order. Check this explicitly. It is not automatic just because the problem is matching-shaped."
+          ]
+        }
+      ],
+      "watch": [
+        "Everything gets used in this lane. If items can be excluded, you are choosing a subset and belong in row 2.",
+        "If no monotonic key exists at all — arbitrary bipartite compatibility — this is general matching, outside the framework entirely: Hopcroft–Karp or Hungarian/Kuhn–Munkres."
+      ],
+      "source": "Row 3 — Matching/pairing greedy · Diagnostic funnel step 4"
+    },
+
+    {
+      "id": "r3-two",
+      "lane": "r3",
+      "step": "Row 3 · execute",
+      "label": "Two pointers",
+      "sublabel": "while lo <= hi",
+      "summary": "Sort by the key, then run lo and hi inward. The loop bound is `while lo <= hi`, not `lo < hi` — and the moment a step needs more than the pointer pair tells you, you are in the wrong lane.",
+      "sections": [
+        {
+          "heading": "The recipe",
+          "paras": [
+            "Sort by some key k and walk two pointers, lo from the bottom and hi from the top, deciding at each step whether the extremes pair or the harder one is taken alone."
+          ]
+        },
+        {
+          "heading": "The loop bound, specifically",
+          "paras": [
+            "`while lo <= hi`, not `while lo < hi`. Strict `<` drops the final single-element case; it is the right bound only for loops that consume two elements per pass, and this loop does not always do that. This was an actual off-by-one caught by stress testing, not a style preference."
+          ]
+        },
+        {
+          "heading": "Two problems that reduce to exactly this",
+          "paras": [
+            "Boats-to-save-people and Tian Ji's horse racing both satisfy the monotone-threshold precondition and collapse to the identical two-pointer recipe. Their objectives are pure counts, which is the part that makes it work."
+          ]
+        },
+        {
+          "heading": "Where it fails — differing per-item values",
+          "paras": [
+            "If the objective has per-item values competing rather than just a count, two pointers have no mechanism to prefer a high-value match over a low-value one when both merely fit. They can check feasibility; they cannot compare payoffs.",
+            "This is exactly what separates jewel thief — which needs row 2's matroid machinery — from boats and Tian Ji's pure-count objective."
+          ]
+        }
+      ],
+      "watch": [
+        "If, mid-derivation, a step genuinely needs more information than the current (lo, hi) pair provides, that is the signal to leave row 3 — not to add bookkeeping until it fits.",
+        "Verify the pairing rule against brute force on small instances. This lane's off-by-ones are silent."
+      ],
+      "source": "Greedy Key Strategy step 4 · Row 3 fails-when (a) · Diagnostic funnel step 4"
+    },
+
+    {
+      "id": "r4-bound",
+      "lane": "r4",
+      "step": "Row 4 · bound",
+      "label": "Prove a bound",
+      "sublabel": "every solution",
+      "summary": "Derive an inequality every feasible solution must satisfy, no matter how clever. This lane is honest maths, not a fourth mechanism — there is no theorem that tells you which inequality a new problem needs.",
+      "sections": [
+        {
+          "heading": "The shape you are in",
+          "paras": [
+            "Every item is included, but assigned or arranged. The objective is often max/min-shaped rather than a plain linear sum, and there is no subset being chosen. There is also no sequential walk — that is the structural line separating this lane from rows 1–3."
+          ]
+        },
+        {
+          "heading": "Stated plainly: row 4 is not a fourth row",
+          "paras": [
+            "Rows 1–3 form one real family: the same constant (separability) and three validated proof techniques — swap-domination, exchange axiom, induction plus substitution — all answering the same underlying question, whether a provably-safe sequence of local choices exists.",
+            "Row 4 has no equivalent technique or theorem. 'Derive a necessary condition, exhibit a matching construction' is a proof strategy used across enormous swaths of combinatorics, not a single mathematical object like a matroid. Nothing mechanically tells you which inequality a new row-4 problem needs, the way the exchange axiom definitively settles row 2. Once you are genuinely here, you are doing general mathematical problem-solving with a verification discipline attached, and no shortcut avoids that."
+          ]
+        },
+        {
+          "heading": "A lower-bound toolkit",
+          "paras": [
+            "Hold these at the right confidence level — this is 'things worth trying', not a validated algorithm, and it is known to be incomplete."
+          ],
+          "list": [
+            "Extremal-constraint-max — every item imposes its own necessary condition; take the max across items. (Wallet.)",
+            "Pigeonhole — more things needing slots than slots exist forces a collision. (Task scheduler.)",
+            "Averaging — a total split across resources means some resource holds at least total/count; combine with extremal-max for a fuller bound. (Machine makespan.)",
+            "LP relaxation / weak duality — relax to continuous, solve, bound the integer optimum. The most general tool here, and the same machinery as row 2's Lagrangian argument, generalised.",
+            "Known to exist, not yet needed on a worked example: double counting, adversary arguments, information-theoretic/entropy bounds, the rearrangement inequality, convexity/Jensen, potential-function and amortised arguments."
+          ]
+        },
+        {
+          "heading": "One note on the rearrangement inequality",
+          "paras": [
+            "It is the same mathematical fact underlying row 1's scheduling swap proofs — just invoked here as a named theorem rather than re-derived from scratch."
+          ]
+        }
+      ],
+      "watch": [
+        "Run the degrees-of-freedom count before suspecting this lane. Something can feel very 'math-y' and still be a parity puzzle with no search space at all.",
+        "If the answer needs enumerating O(n) candidate constructions and taking the min over the family, that is bounded search or DP, not row 4. Joystick is the concrete example."
+      ],
+      "source": "Row 4 — Assignment / lower-bound-construction greedy · lower-bound toolkit"
+    },
+
+    {
+      "id": "r4-construct",
+      "lane": "r4",
+      "step": "Row 4 · construct",
+      "label": "Construct",
+      "sublabel": "meets the bound",
+      "summary": "Exhibit a specific solution that hits the bound exactly. If it only comes close, you have an approximation guarantee, not an exact result — and it has to be labelled that way.",
+      "sections": [
+        {
+          "heading": "What is left to do",
+          "paras": [
+            "Once the bound is proved, exhibit a construction that attains it. Typically there is no 'algorithm' left to run in the row 1–3 sense — the construction is usually just reading off aggregate values. Wallet is two maxes; task scheduler is a formula in F and num_max."
+          ]
+        },
+        {
+          "heading": "Check that the bound and the construction actually coincide",
+          "paras": [
+            "This is the step it is tempting to skip. When they match — wallet, task scheduler — that is a genuine exact proof.",
+            "When they only come close, it is an approximation guarantee, a different and weaker kind of result. LPT scheduling on machine makespan matches the averaging-plus-extremal bound in only about 44% of random trials, with observed ratios up to roughly 1.41. Presenting that as exact would be wrong."
+          ]
+        },
+        {
+          "heading": "Order-blindness as a confirmation signal",
+          "paras": [
+            "A correct row-4 construction is an unconditional aggregation applied independently per item and combined — order-blind and embarrassingly parallel. Shuffling wallet's cards through the same formula gives byte-identical output every time.",
+            "That is a cheap sanity check you can actually run: if shuffling the input changes your answer, you have a sequential decision rule and you are not in row 4."
+          ]
+        },
+        {
+          "heading": "When no construction exists",
+          "paras": [
+            "Some problems in this shape are genuinely NP-hard — machine covering reduces from Partition. Then no polynomial exact greedy exists, provable by an explicit counterexample or a hardness reduction. Heuristics may still carry proven approximation ratios (3/4 LPT for machine covering), which is worth distinguishing explicitly from exactness."
+          ]
+        }
+      ],
+      "watch": [
+        "Always state which you have — an exact proof or an approximation ratio — before calling the problem solved.",
+        "Stress-test the construction against brute force on small instances. Every wrong candidate formula in this lane so far was caught that way, not on paper."
+      ],
+      "source": "Row 4 technique + exactness caveat · Outside the framework (NP-hard) · Standing verification habit"
+    }
+  ]
+}

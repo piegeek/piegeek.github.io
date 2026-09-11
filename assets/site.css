@@ -444,7 +444,7 @@ a.employer:focus-visible {
 
 .stat-tile {
   background: var(--ink-raise);
-  border: 1px solid var(--line);
+  /* border: 1px solid var(--line); */
   border-radius: var(--r-md);
   padding: 13px 15px;
 }
@@ -461,6 +461,149 @@ a.employer:focus-visible {
   letter-spacing: 0.05em;
   text-transform: uppercase;
   margin-top: 2px;
+}
+
+/* ------------------------------------------------------------- views */
+
+.view[hidden] { display: none !important; }
+
+/* Top-level section switcher, sitting where the static "Portfolio"
+   label used to. Deliberately quieter than the accent-yellow brand
+   beside it — the active pill reads as state, not as a second logo. */
+.view-tabs {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.view-tab {
+  padding: 5px 13px;
+  border: 1px solid transparent;
+  border-radius: 99px;
+  background: none;
+  color: var(--text-mute);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: color 0.18s, background 0.18s, border-color 0.18s;
+}
+
+.view-tab:hover { color: var(--text-soft); }
+
+.view-tab.is-on {
+  color: var(--text);
+  background: var(--ink-raise);
+  border-color: var(--line-hi);
+}
+
+.view-tab:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* -------------------------------------------------------- algorithms */
+
+.algo-entry { padding-bottom: 10px; }
+
+.algo-entry + .algo-entry {
+  margin-top: 32px;
+  padding-top: 28px;
+  border-top: 1px solid var(--line);
+}
+
+.algo-eyebrow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  font-size: 11.5px;
+  color: var(--text-mute);
+  letter-spacing: 0.05em;
+  margin-bottom: 6px;
+}
+
+.algo-eyebrow .dot { color: var(--line-hi); }
+
+.algo-title {
+  margin: 0 0 8px;
+  font-size: 23px;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  line-height: 1.25;
+  color: var(--text);
+}
+
+.algo-blurb {
+  margin: 0 0 24px;
+  font-size: 14px;
+  line-height: 1.65;
+  color: var(--text-soft);
+  max-width: 80ch;
+}
+
+/* --- motivation: first-person prose, read at a comfortable measure --- */
+
+.algo-motivation { max-width: 76ch; }
+
+.algo-motivation h4 {
+  margin: 22px 0 7px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.algo-motivation h4:first-child { margin-top: 0; }
+
+.algo-motivation p {
+  margin: 0 0 10px;
+  font-size: 14px;
+  line-height: 1.72;
+  color: var(--text-soft);
+}
+
+.algo-code {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 12px;
+  margin: 12px 0 4px;
+}
+
+.algo-code figure {
+  margin: 0;
+  min-width: 0;
+  background: var(--ink-deep);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  overflow: hidden;
+}
+
+.algo-code figcaption {
+  padding: 8px 14px;
+  border-bottom: 1px solid var(--line);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  color: var(--text-mute);
+}
+
+.algo-code pre {
+  margin: 0;
+  padding: 12px 14px 14px;
+  overflow-x: auto;
+  font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+  font-size: 12px;
+  line-height: 1.75;
+  color: rgba(255, 255, 255, 0.78);
+}
+
+/* The diagram is a light panel on the dark canvas, so it needs the
+   shadow the detail modal would otherwise have given it. */
+.algo-entry .gk {
+  margin-top: 4px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
 }
 
 /* --------------------------------------------------------- project grid */

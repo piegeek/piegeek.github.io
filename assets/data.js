@@ -77,6 +77,95 @@ const STATS = [
 const TIMELINE_START = 2019;
 
 /* ------------------------------------------------------------------
+   ALGORITHMS
+   The "Algorithms" section — write-ups that aren't projects. Entries
+   stack in order; add another object to add another write-up.
+
+   `diagram: 'greedy'` mounts the interactive block diagram inline;
+   its copy lives in /greedy-key-strategy/strategy.json.
+   ------------------------------------------------------------------ */
+const ALGORITHMS = [
+  {
+    id: 'greedy-key',
+    title: 'Greedy Key Strategy',
+    kind: 'Framework',
+    timeline: '2026 – ongoing',
+    blurb:
+      'Identify the key, read the output shape, then follow one of four ' +
+      'rows to the greedy algorithm strategy',
+    // Where the design came from — adapted from the prompt that started
+    // it. Rendered as the "Motivation" block above the diagram.
+    motivation: [
+      {
+        heading: 'Two kinds of DP',
+        paras: [
+          'For optimization problems I work with two DP shapes. Exploration DP builds a permutation; decision DP builds a subset.',
+        ],
+        code: [
+          {
+            label: 'Exploration DP — builds a permutation',
+            src: [
+              'for i in range(n):',
+              '    if not (visited & (1 << i)):',
+              '        visited |= (1 << i)',
+              '        ret = max(ret, cost[i] + dp(i, visited))',
+              '        visited &= ~(1 << i)',
+              'return ret',
+            ].join('\n'),
+          },
+          {
+            label: 'Decision DP — builds a subset',
+            src: [
+              '# Skip',
+              'ret = dp(idx + 1, C)',
+              '# Take',
+              'ret = max(ret, cost[idx] + dp(idx + 1, C + cap[idx]))',
+              'return ret',
+            ].join('\n'),
+          },
+        ],
+      },
+      {
+        heading: 'Two kinds of greedy',
+        paras: [
+          'Greedy algorithms are a special case of DP: in optimization problems, the DP frontier collapses to 1. So the same split carries over. Exploration greedy builds a permutation greedily; decision greedy builds a subset greedily.',
+          "The keyword is \u201cgreedily\u201d. Either way, I need a greedy key to build the answer by.",
+        ],
+      },
+      {
+        heading: 'Where the textbook method stops',
+        paras: [
+          'The traditional method has two steps: verify the greedy property with the exchange argument, then verify that optimal substructure holds. Its limitation is that it only applies once you have found the key, and the key is not easy to find.',
+          "I tried inferring the key structurally \u2014 write the DP solution first, then derive something from the feasibility requirements or the code structure. That is logically impossible. The greedy key can't be extracted by looking at the DP solution's code; it can't be derived syntactically from a DP formulation.",
+        ],
+      },
+      {
+        heading: 'What I had so far',
+        paras: [
+          'For exploration greedy, since I am building a permutation, the question in my head was: against which property is delaying an item most costly? Common answers are most constrained, most frequent, earliest deadline. Then I pick a data structure that fits the problem\u2019s conditions (usually a stack or a queue), walk the input, and greedily add items or remove them with a feasibility check. But how exactly to add them greedily still needed a rule I didn\u2019t have.',
+          'Decision greedy was a bit more structured. The matroid approach sorts the inputs by some key and adds each one if it passes the independence check. Where the matroid property can\u2019t be used, I check whether feasibility depends on a single variable, and if so, derive the key from that. Still, there was no golden rule that solved every problem this way.',
+        ],
+      },
+      {
+        heading: 'Why build a framework',
+        paras: [
+          'It felt like I had to memorise every type of question: whether I could solve a greedy problem depended on whether I had seen a similar one. Coming up with a DP solution is more straightforward than that.',
+          'Asking an LLM didn\u2019t fix it. It has seen so many coding problems that it recalls the greedy key without the intuition behind it. I wanted a golden standard for deriving keys that I could build on, not a list of problem types and their solutions.',
+        ],
+      },
+      {
+        heading: 'Where it went',
+        paras: [
+          'The permutation/subset split didn\u2019t survive enough problems intact. Pairing and assignment problems needed rows of their own, and several problems that look like permutations \u2014 Prim\u2019s, Huffman, meeting rooms, deadline scheduling \u2014 turned out to be subsets. The diagram below is where it ended up.',
+        ],
+      },
+    ],
+    tags: ['Greedy', 'Matroids', 'Lagrangian duality', 'Proof strategy'],
+    diagram: 'greedy',
+  },
+];
+
+/* ------------------------------------------------------------------
    PROJECTS
    Order here is the order on the dashboard; all cards render the
    same size.
