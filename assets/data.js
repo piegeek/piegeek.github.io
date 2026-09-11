@@ -90,6 +90,14 @@ const ALGORITHMS = [
     title: 'Greedy Key Strategy',
     kind: 'Framework',
     timeline: '2026 – ongoing',
+    // Attribution: shown as the byline, and appended to text copied from
+    // this entry. Author defaults to PROFILE.name.
+    published: '2026-09-11',
+    url: 'https://piegeek.github.io/#algorithms',
+    license: {
+      name: 'CC BY-NC-ND 4.0',
+      href: 'https://creativecommons.org/licenses/by-nc-nd/4.0/',
+    },
     blurb:
       'Identify the key, read the output shape, then follow one of four ' +
       'rows to the greedy algorithm strategy',

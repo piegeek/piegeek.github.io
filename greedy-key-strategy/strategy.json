@@ -3,7 +3,12 @@
     "title": "Greedy Key Strategy",
     "subtitle": "A derived, falsifiable decision procedure for greedy problems",
     "intro": "Not a collection of memorised solutions. Every branch below was derived, and the intricate ones were checked against a brute-force solver before being believed. Click any box to read what that step is doing and why.",
-    "updated": "2026-09-09",
+    "updated": "2026-09-11",
+    "author": "Sang Yeop Han",
+    "copyright": "© 2026 Sang Yeop Han",
+    "url": "https://piegeek.github.io/#algorithms",
+    "license": "CC BY-NC-ND 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-nc-nd/4.0/",
     "standing": "Standing habit: for any nontrivial derivation, implement a brute-force or exact solver for small instances, stress-test the candidate formula over many random cases, and only then present it as correct. This has already caught off-by-one loop bounds, mis-directed inequalities, formulas that skipped required elements, and a heap-closure claim that broke under a two-line test."
   },
 

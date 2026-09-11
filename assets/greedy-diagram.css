@@ -353,6 +353,35 @@
   padding-left: 12px;
 }
 
+/* Attribution. Kept small and quiet, but inside the panel on purpose:
+   anything outside it is cropped out of a screenshot. */
+.gk-credit {
+  margin-top: 16px;
+  padding-top: 11px;
+  border-top: 1px solid var(--gk-rule);
+  font-size: 11px;
+  letter-spacing: 0.02em;
+  color: var(--gk-ink-mute);
+  text-align: right;
+}
+
+.gk-credit a,
+.gk-foot-credit a {
+  color: inherit;
+  text-decoration: underline;
+  text-decoration-color: var(--gk-rule-hi);
+  text-underline-offset: 2px;
+}
+
+.gk-credit a:hover,
+.gk-foot-credit a:hover { color: var(--gk-teal); }
+
+.gk-foot-credit {
+  font-size: 10.5px;
+  letter-spacing: 0.02em;
+  color: var(--gk-ink-mute);
+}
+
 .gk-error {
   padding: 16px;
   border: 1px dashed var(--gk-rule-hi);
@@ -618,6 +647,7 @@
 .gk-sheet-foot {
   flex-shrink: 0;
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 10px;
   padding: 11px 22px;
@@ -682,6 +712,7 @@
 
 @media (max-width: 600px) {
   .gk { padding: 16px 14px 18px; }
+  .gk-foot-credit { order: 5; flex-basis: 100%; }
   .gk-lanes { grid-template-columns: minmax(0, 1fr); }
   .gk-sheet-head, .gk-sheet-body, .gk-sheet-foot { padding-left: 16px; padding-right: 16px; }
 }

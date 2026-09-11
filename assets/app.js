@@ -301,8 +301,56 @@ function motivationBody(sections) {
   return wrap;
 }
 
+const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+                'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+/* '2026-09-11' -> '11 Sep 2026', built by hand so it doesn't vary with
+   the reader's locale. */
+function formatDate(iso) {
+  const [y, m, d] = String(iso).split('-').map(Number);
+  return y && m && d ? `${d} ${MONTHS[m - 1]} ${y}` : iso;
+}
+
+function entryAuthor(entry) {
+  return entry.author || PROFILE.name;
+}
+
+/* The credit string used when text is copied out of an entry. */
+function attribution(entry) {
+  return [
+    `"${entry.title}" by ${entryAuthor(entry)}`,
+    entry.url,
+    entry.license && `licensed ${entry.license.name}`,
+  ].filter(Boolean).join(', ');
+}
+
+function bylineNode(entry) {
+  const line = el('div', 'algo-byline');
+  const add = (node) => {
+    if (line.childNodes.length) line.appendChild(el('span', 'dot', '•'));
+    line.appendChild(node);
+  };
+
+  const by = el('span');
+  by.appendChild(document.createTextNode('By '));
+  by.appendChild(el('strong', null, entryAuthor(entry)));
+  add(by);
+
+  if (entry.published) add(el('span', null, `First published ${formatDate(entry.published)}`));
+
+  if (entry.license) {
+    const a = el('a', null, entry.license.name);
+    a.href = entry.license.href;
+    a.target = '_blank';
+    a.rel = 'license noopener noreferrer';
+    add(a);
+  }
+  return line;
+}
+
 function algorithmEntry(entry) {
   const art = el('article', 'algo-entry');
+  art.dataset.id = entry.id;             // looked up by the copy handler
 
   const eyebrow = el('div', 'algo-eyebrow');
   [entry.kind, entry.timeline].filter(Boolean).forEach((t, i) => {
@@ -312,6 +360,7 @@ function algorithmEntry(entry) {
   art.appendChild(eyebrow);
 
   art.appendChild(el('h3', 'algo-title', entry.title));
+  art.appendChild(bylineNode(entry));
   if (entry.blurb) art.appendChild(el('p', 'algo-blurb', entry.blurb));
 
   if (entry.motivation) art.appendChild(block('Motivation', motivationBody(entry.motivation)));
@@ -327,6 +376,31 @@ function algorithmEntry(entry) {
   if (entry.diagram === 'greedy') art.appendChild(el('div', 'gk'));
 
   return art;
+}
+
+/* Append the credit to text copied out of an algorithms entry, so a
+   paste elsewhere keeps the author, link and license. Skipped for short
+   selections (a word or a phrase shouldn't grow a footer) and for code
+   blocks, where an extra line would break the pasted snippet. */
+const COPY_ATTRIBUTION_MIN = 40;
+
+function attributeCopy(e) {
+  const sel = window.getSelection();
+  if (!sel || sel.isCollapsed || !e.clipboardData) return;
+
+  const text = sel.toString();
+  if (text.trim().length < COPY_ATTRIBUTION_MIN) return;
+
+  const anchor = sel.anchorNode;
+  const node = anchor && (anchor.nodeType === 1 ? anchor : anchor.parentElement);
+  if (!node || node.closest('pre')) return;
+
+  const art = node.closest('.algo-entry');
+  const entry = art && ALGORITHMS.find((a) => a.id === art.dataset.id);
+  if (!entry) return;
+
+  e.clipboardData.setData('text/plain', `${text}\n\n— ${attribution(entry)}`);
+  e.preventDefault();
 }
 
 function renderAlgorithms() {
@@ -671,6 +745,8 @@ renderAlgorithms();
 document.querySelectorAll('.view-tab').forEach((tab) => {
   tab.addEventListener('click', () => showView(tab.dataset.view));
 });
+
+document.addEventListener('copy', attributeCopy);
 
 window.addEventListener('hashchange', () => {
   showView(location.hash === '#algorithms' ? 'algorithms' : 'portfolio', true);

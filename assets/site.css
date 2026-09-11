@@ -536,6 +536,33 @@ a.employer:focus-visible {
   color: var(--text);
 }
 
+.algo-byline {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin: -2px 0 14px;
+  font-size: 12.5px;
+  color: var(--text-mute);
+}
+
+.algo-byline .dot { color: var(--line-hi); }
+
+.algo-byline strong {
+  font-weight: 500;
+  color: var(--text-soft);
+}
+
+.algo-byline a {
+  color: var(--text-soft);
+  text-decoration: underline;
+  text-decoration-color: var(--line-hi);
+  text-underline-offset: 3px;
+  transition: color 0.18s;
+}
+
+.algo-byline a:hover { color: var(--accent); }
+
 .algo-blurb {
   margin: 0 0 24px;
   font-size: 14px;

@@ -107,6 +107,28 @@ function gkBuildNotes(data) {
   return notes;
 }
 
+/* Copyright, link and license, rendered inside the panel itself so that a
+   screenshot of the diagram or of an open sheet carries the attribution
+   with it. Returns null if the JSON has no attribution fields. */
+function gkCredit(meta, cls) {
+  if (!meta || !meta.copyright) return null;
+  const c = gkEl('div', cls);
+  const bits = [meta.copyright];
+  if (meta.url) bits.push(meta.url.replace(/^https?:\/\//, ''));
+  c.appendChild(document.createTextNode(bits.join(' · ')));
+  if (meta.license) {
+    c.appendChild(document.createTextNode(' · '));
+    const a = gkEl('a', null, meta.license);
+    if (meta.licenseUrl) {
+      a.href = meta.licenseUrl;
+      a.target = '_blank';
+      a.rel = 'license noopener noreferrer';
+    }
+    c.appendChild(a);
+  }
+  return c;
+}
+
 /* ------------------------------------------------------- explain sheet */
 
 function gkRenderSheetBody(box, host) {
@@ -200,7 +222,7 @@ function closeGreedySheet() {
   return true;
 }
 
-function gkBuildSheet() {
+function gkBuildSheet(meta) {
   const scrim = gkEl('div', 'gk-scrim');
   scrim.hidden = true;
   scrim.addEventListener('click', closeGreedySheet);
@@ -234,6 +256,8 @@ function gkBuildSheet() {
   foot.appendChild(prev);
   foot.appendChild(next);
   foot.appendChild(gkEl('span', 'gk-foot-spacer'));
+  const credit = gkCredit(meta, 'gk-foot-credit');
+  if (credit) foot.appendChild(credit);
   foot.appendChild(counter);
 
   sheet.appendChild(head);
@@ -263,7 +287,7 @@ function initGreedyDiagram(host) {
       head.appendChild(gkEl('span', 'gk-hint', 'Click any box'));
       host.appendChild(head);
 
-      const parts = gkBuildSheet();
+      const parts = gkBuildSheet(data.meta);
       gkActive = {
         root: host,
         boxes: data.boxes,
@@ -294,6 +318,8 @@ function initGreedyDiagram(host) {
       if (data.meta.standing) {
         host.appendChild(gkEl('div', 'gk-standing', data.meta.standing));
       }
+      const credit = gkCredit(data.meta, 'gk-credit');
+      if (credit) host.appendChild(credit);
       host.appendChild(parts.scrim);
       host.appendChild(parts.sheet);
     })
