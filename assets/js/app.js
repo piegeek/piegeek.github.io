@@ -348,6 +348,26 @@ function bylineNode(entry) {
   return line;
 }
 
+/* Link out to the entry's long-form write-up. It is a plain anchor to a
+   real URL, not a view swap: the post has its own hash router, so a
+   deep link like /greedy-key-strategy/#ch3 keeps working and the two
+   routers never see each other's hashes. */
+function readLinkNode(read) {
+  const a = el('a', 'algo-read');
+  a.href = read.href;
+
+  if (read.meta) a.appendChild(el('span', 'algo-read-meta', read.meta));
+  a.appendChild(el('span', 'algo-read-title', read.label));
+  if (read.blurb) a.appendChild(el('span', 'algo-read-blurb', read.blurb));
+
+  const cue = el('span', 'algo-read-cue');
+  cue.appendChild(el('span', null, 'Read the series'));
+  cue.insertAdjacentHTML('beforeend', CHEVRON);
+  a.appendChild(cue);
+
+  return a;
+}
+
 function algorithmEntry(entry) {
   const art = el('article', 'algo-entry');
   art.dataset.id = entry.id;             // looked up by the copy handler
@@ -362,6 +382,11 @@ function algorithmEntry(entry) {
   art.appendChild(el('h3', 'algo-title', entry.title));
   art.appendChild(bylineNode(entry));
   if (entry.blurb) art.appendChild(el('p', 'algo-blurb', entry.blurb));
+
+  // Above the motivation on purpose: a reader who came for the write-up
+  // shouldn't have to scroll past the whole prose block and the diagram
+  // to find out it exists.
+  if (entry.read) art.appendChild(readLinkNode(entry.read));
 
   if (entry.motivation) art.appendChild(block('Motivation', motivationBody(entry.motivation)));
 

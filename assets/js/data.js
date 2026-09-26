@@ -5,25 +5,25 @@
 
 const IMG = {
   // RISC-V — Project 3, branch predictor results
-  bp1: '/assets/Screenshot_2026-05-04_at_4.16.38%20PM-9nn75gZe.png',
-  bp2: '/assets/Screenshot_2026-05-04_at_4.17.09%20PM-CKqY-XmR.png',
-  bp3: '/assets/Screenshot_2026-05-04_at_4.17.29%20PM-F5Fh-fEq.png',
+  bp1: '/assets/img/Screenshot_2026-05-04_at_4.16.38%20PM-9nn75gZe.png',
+  bp2: '/assets/img/Screenshot_2026-05-04_at_4.17.09%20PM-CKqY-XmR.png',
+  bp3: '/assets/img/Screenshot_2026-05-04_at_4.17.29%20PM-F5Fh-fEq.png',
 
   // RISC-V — Project 4, cache simulator results
-  cache1: '/assets/Screenshot_2026-05-04_at_4.23.23%20PM-BlXCgK54.png',
-  cache2: '/assets/Screenshot_2026-05-04_at_4.23.41%20PM-CqDEbrZ5.png',
-  cache3: '/assets/Screenshot_2026-05-04_at_4.23.59%20PM-D5KwNBW5.png',
-  cache4: '/assets/Screenshot_2026-05-04_at_4.24.17%20PM-oOabJWA3.png',
+  cache1: '/assets/img/Screenshot_2026-05-04_at_4.23.23%20PM-BlXCgK54.png',
+  cache2: '/assets/img/Screenshot_2026-05-04_at_4.23.41%20PM-CqDEbrZ5.png',
+  cache3: '/assets/img/Screenshot_2026-05-04_at_4.23.59%20PM-D5KwNBW5.png',
+  cache4: '/assets/img/Screenshot_2026-05-04_at_4.24.17%20PM-oOabJWA3.png',
 
   // POLL
-  poll1: '/assets/Screenshot_2026-05-04_at_3.58.00%20PM-ZGgA-gPL.png',
-  poll2: '/assets/Screenshot_2026-05-04_at_3.58.24%20PM-Tn-85G6L.png',
+  poll1: '/assets/img/Screenshot_2026-05-04_at_3.58.00%20PM-ZGgA-gPL.png',
+  poll2: '/assets/img/Screenshot_2026-05-04_at_3.58.24%20PM-Tn-85G6L.png',
 
   // Cloud Alarm
-  alarm1: '/assets/Simulator_Screen_Shot_-_iPhone_11_Pro_Max_-_2020-08-04_at_00.36.45-B379k6Ay.png',
-  alarm2: '/assets/Simulator_Screen_Shot_-_iPhone_11_Pro_Max_-_2020-08-04_at_00.37.35-CMA-la8A.png',
-  alarm3: '/assets/Simulator_Screen_Shot_-_iPhone_11_Pro_Max_-_2020-08-04_at_00.37.39-LdQWEgEa.png',
-  alarm4: '/assets/Simulator_Screen_Shot_-_iPhone_11_Pro_Max_-_2020-08-04_at_00.37.41-DZBDI07R.png',
+  alarm1: '/assets/img/Simulator_Screen_Shot_-_iPhone_11_Pro_Max_-_2020-08-04_at_00.36.45-B379k6Ay.png',
+  alarm2: '/assets/img/Simulator_Screen_Shot_-_iPhone_11_Pro_Max_-_2020-08-04_at_00.37.35-CMA-la8A.png',
+  alarm3: '/assets/img/Simulator_Screen_Shot_-_iPhone_11_Pro_Max_-_2020-08-04_at_00.37.39-LdQWEgEa.png',
+  alarm4: '/assets/img/Simulator_Screen_Shot_-_iPhone_11_Pro_Max_-_2020-08-04_at_00.37.41-DZBDI07R.png',
 };
 
 /* ------------------------------------------------------------------
@@ -38,8 +38,8 @@ const IMG = {
    ------------------------------------------------------------------ */
 const PROFILE = {
   name: 'Sang Yeop Han',
-  photo: '/assets/profile_img.jpg',
-  photoFull: '/assets/profile_img_full_body.jpg',   // shown on avatar hover
+  photo: '/assets/img/profile_img.jpg',
+  photoFull: '/assets/img/profile_img_full_body.jpg',   // shown on avatar hover
   headline: 'BS, Electrical & Computer Engineering, Seoul National University',
   location: '',                 // e.g. 'Seoul, South Korea'
   current: '',                  // e.g. 'Software Engineer @ …'
@@ -47,7 +47,7 @@ const PROFILE = {
   focus: 'Frontier LLM research and development',
   employment: 'SNDWorks',
   employmentUrl: 'https://sndworks.ai',
-  employmentLogo: '/assets/sndworks-favicon.png',
+  employmentLogo: '/assets/img/sndworks-favicon.png',
   email: 'piegeek@snu.ac.kr',
   about:
     'Builds across the stack and down to the metal — from RISC-V CPUs and ' +
@@ -93,7 +93,7 @@ const ALGORITHMS = [
     // Attribution: shown as the byline, and appended to text copied from
     // this entry. Author defaults to PROFILE.name.
     published: '2026-09-11',
-    url: 'https://piegeek.github.io/#algorithms',
+    url: 'https://piegeek.github.io/greedy-key-strategy/',
     license: {
       name: 'CC BY-NC-ND 4.0',
       href: 'https://creativecommons.org/licenses/by-nc-nd/4.0/',
@@ -101,6 +101,19 @@ const ALGORITHMS = [
     blurb:
       'Identify the key, read the output shape, then follow one of four ' +
       'rows to the greedy algorithm strategy',
+    // The long-form derivation. It lives at its own URL rather than in
+    // this view: it has its own hash router and its own reading layout,
+    // and both would fight the dashboard's. Swap `href` to move it
+    // elsewhere later — nothing else here depends on where it lives.
+    read: {
+      href: '/greedy-key-strategy/',
+      label: 'A Structured Approach to All (Most) Greedy Problems',
+      meta: 'Series \u00b7 7 parts',
+      blurb:
+        'The derivation this diagram came out of \u2014 what each archetype ' +
+        'is, why the key can\u2019t be read off a DP solution, and where the ' +
+        'first version of the split turned out to be wrong.',
+    },
     // Where the design came from — adapted from the prompt that started
     // it. Rendered as the "Motivation" block above the diagram.
     motivation: [

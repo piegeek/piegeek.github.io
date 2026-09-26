@@ -1,0 +1,178 @@
+{
+  "title": "Building a derived framework for greedy algorithms",
+  "summary": "A condensed record of how a learner and Claude built a falsifiable, step-by-step method for greedy problems, starting from frustration with memorized solutions and ending with a four-archetype framework plus a diagnostic funnel. Problem-specific examples are left out; each entry keeps only the question that moved the framework forward and the answer that settled it.",
+  "date_compiled": "2026-09-22",
+  "chapters": [
+    {
+      "chapter": 1,
+      "title": "The starting frustration",
+      "exchanges": [
+        {
+          "question": "DP has a clear template: exploration DP builds a permutation, decision DP builds a subset. Greedy is DP whose frontier collapses to one path, so there should be exploration greedy and decision greedy. But finding the greedy key feels like memorization, and the textbook 'prove it with the exchange argument' only verifies a key you already have. I can't read the key off the DP code either. Is there a general, mathematical way to derive the key?",
+          "answer": "Make the frontier-collapse idea precise: greedy works when one choice can be proven to dominate every other reachable state at each layer, for any future input. That domination proof is the real object you are after, and it lives in the objective and constraints, not in the DP code. A universal key formula cannot exist, since some problems provably admit no fixed ordering at all. What can exist is a procedure that always ends in one of two outcomes: it produces the key, or it produces a proof that no static key exists and names what to use instead. For permutations: write the swap of two adjacent items symbolically and see what survives. For subsets: test the feasibility structure first (matroid), and fall back to a price-based argument (Lagrangian) if that fails."
+        },
+        {
+          "question": "ChatGPT suggested greedy is just choosing the action that minimizes some monotone potential of the resulting state. Is that the missing universal equation?",
+          "answer": "It is true but empty. If the potential is the true optimal cost-to-go, the formula is Bellman's principle with an oracle, which holds for every optimization problem, including ones with no greedy solution. So it cannot tell greedy problems apart from non-greedy ones. The real content is hidden in what it skips: the future cost has to collapse onto a small summary of the state, and the proof has to show that it does. The swap test is exactly the check for that collapse."
+        }
+      ]
+    },
+    {
+      "chapter": 2,
+      "title": "Exploration greedy: the swap test",
+      "exchanges": [
+        {
+          "question": "How exactly does the swap derivation work, and what do 'bottleneck' and 'max over per-item terms' mean? Should a minimize problem use a max and a maximize problem use a min?",
+          "answer": "Fix everything before the two swapped items as a shared state T, then compare both orders. For a sum-type objective, subtract the two costs: if T cancels, the remainder rearranges into a comparison between the two items, which is the key. For a bottleneck objective, the cost is set by the single worst item (a max or min over per-item terms), so there is nothing to cancel. Instead, find the quantity that the swap cannot change and show that every term of the worse order is bounded by a term already present in the better order. The pairing of minimize-with-max and maximize-with-min is not a grammar rule. It follows from what makes a problem sensible: shrink the worst cost, or raise the worst benefit. The full picture is a 2x2 grid of (minimize or maximize) by (sum or bottleneck)."
+        },
+        {
+          "question": "Since we only compare prefix + (i, j) against prefix + (j, i), is it always enough to look at just the two swapped items' terms?",
+          "answer": "Only under two conditions. Separability: each item's cost depends on T and its own data, never on which item sits next to it. Block invariance: the swap must not change what gets handed to everything after the pair. When both hold, every other term is the same constant on both sides, and since max is monotone, the two-term comparison decides the whole thing. If costs depend on which specific item came before (setup costs between particular pairs), the suffix changes too, and the two-term reduction fails."
+        },
+        {
+          "question": "So the recipe is: assume a monotonic sufficient statistic T, then check separability and block invariance?",
+          "answer": "Monotonicity is not a separate condition. It is often a side effect of the right order, not something the proof needs on its own. Finding T and finding the order happen together: T is a proposed compression of the prefix, and the swap test checks whether that T and that order survive jointly. The load-bearing checks are separability and block invariance."
+        },
+        {
+          "question": "What is block invariance precisely? Is it that the pair's combined effect on T is order-independent?",
+          "answer": "That is the special case, not the general rule. In additive problems, T ends up exactly equal either way, so only the cost matters. In general, block invariance is a joint domination: the better order has weakly lower cost and also hands the suffix a T that is at least as favorable. Sometimes the correct order wins on both counts at once, and an 'equal T' definition would miss that."
+        },
+        {
+          "question": "If I guess a wrong key, how do I rule it out using the framework rather than by hunting for counterexamples?",
+          "answer": "Once the correct pairwise rule is proven, it becomes a yardstick. First apply separability as a free filter: if the candidate key needs information about other items in the input, it is disqualified before any swap. If it passes, ask whether the candidate key is forced to move together with the quantity the proof says actually matters. If it has a free parameter that can vary independently, you can build the smallest disagreeing pair directly instead of searching for one."
+        },
+        {
+          "question": "What shapes can T take in exploration greedy? Were the examples just the ones I happened to bring?",
+          "answer": "There are two genuine shapes. Unconditional aggregation: every item feeds a commutative operation such as a sum or max, so the order cannot matter to T and block invariance comes almost for free. Conditional aggregation: T only updates when an item fails a test that depends on T (for example, overwriting a frontier), so correctness has to be earned by the right sort order. Anything else that appeared along the way turned out to belong to a different category entirely."
+        }
+      ]
+    },
+    {
+      "chapter": 3,
+      "title": "If the sufficient statistic T is suspected to be implemented as a data structure, it's subset greedy, not permutation",
+      "exchanges": [
+        {
+          "question": "If no static key exists for an exploration problem, can I fall back to an adaptive greedy with a priority queue before concluding it's DP?",
+          "answer": "Checking this carefully showed a recurring mistake: 'built one piece at a time' is not the same as 'building a permutation.' Several classic adaptive algorithms produce a set or a structure whose value does not depend on insertion order. They belong with subset-style problems, not exploration greedy. The defining property of exploration greedy is that position in the sequence drives the cost."
+        },
+        {
+          "question": "When T seems to need a whole data structure, like a heap, instead of one number, what does that mean?",
+          "answer": "There are two separate things to check. Separability asks whether the decision at this step reads only a compact summary. Closure asks whether that summary can compute its own next value from itself plus the new item. A heap exposes one number for each decision, but after an eviction the new minimum was hidden inside the heap all along, so a single number cannot carry itself forward. The learner pushed back on adding closure as a third permanent rule. The agreed resolution: for true exploration greedy, keep separability and block invariance, and treat 'T needs a data structure' as a diagnostic signal that the problem is actually subset selection."
+        },
+        {
+          "question": "The problem says I choose an order. How can it not be exploration greedy?",
+          "answer": "Test it directly: take one chosen subset and try different valid orderings. If every feasible ordering gives the same objective, and one mechanical rule always finds a valid order, then order is just bookkeeping and the real decision is which subset to pick. That makes it subset selection wearing a sequencing costume. Real exploration greedy is when different orderings of the same items give genuinely different costs."
+        }
+      ]
+    },
+    {
+      "chapter": 4,
+      "title": "Decision greedy: matroids and the Lagrangian",
+      "exchanges": [
+        {
+          "question": "How do I tell whether a subset problem is a matroid, and what is a Lagrangian? I've never seen one.",
+          "answer": "A matroid is about the constraint alone, not the objective. In a matroid, every maximal feasible set has the same size, so two maximal sets of different sizes prove it is not a matroid. If it is a matroid, sorting by the raw objective value is exactly optimal. If it is not, and there is one budget constraint, the Lagrangian replaces the hard cap with a price per unit of the resource. The objective then splits into independent per-item decisions: include an item if its reward-to-cost ratio beats the price. Each item's switch point is its own ratio, so the ranking is fixed before you know the final price. That is where 'sort by ratio' comes from. With two or more constraints, the ranking can flip depending on how the prices balance, so no static key exists in general."
+        },
+        {
+          "question": "Isn't a matroid about the strategy rather than the key?",
+          "answer": "Yes, and this exposes an asymmetry. In the matroid case, the key is trivial (the raw value) and all the work is validating the constraint structure. In the Lagrangian case, the key takes real derivation, but the strategy is only exact when fractional amounts are allowed. For whole items, the ratio-ordered greedy is a proven 2-approximation, not exact, except when all costs are equal."
+        },
+        {
+          "question": "For the whole-item case, should I stop at the first item that doesn't fit, or skip it and keep going?",
+          "answer": "Always skip and continue. Both rules make identical choices up to the first item that doesn't fit, and after that point skipping can only find more value, never less. A stress test over tens of thousands of random cases confirmed it with zero exceptions. There is no 'try both and compare.' Being the better heuristic still doesn't make it exact."
+        },
+        {
+          "question": "Does decision greedy reduce to exploration greedy, the way decision DP reduces to exploration DP?",
+          "answer": "Not in the same sense. DP can always simulate one form with the other because it searches the full state space either way. Greedy is a proof that a collapse exists, and a collapse in one geometry doesn't imply one in the other. In practice, a working decision greedy usually looks like a sort (order the candidates) followed by a filter (include if feasible), and when decision greedy fails, the sort-based version fails too."
+        },
+        {
+          "question": "So data structures never appear in exploration greedy's T, but can appear in decision greedy?",
+          "answer": "Close. In exploration greedy, T being a single number is forced by the proof, since the swap has to reduce to one inequality. In decision greedy, a data structure appears only when the feasibility check isn't a simple number comparison, and that depends on which kind of matroid it is: a plain budget needs no structure, a no-cycle constraint needs union-find, and a still-matchable constraint needs union-find or a heap. The exchange property itself is proven once, analytically. The data structure just runs the greedy efficiently."
+        }
+      ]
+    },
+    {
+      "chapter": 5,
+      "title": "Matching problems, archetype 3",
+      "exchanges": [
+        {
+          "question": "When I swapped two items in a pairing problem, cost and future freedom pulled in opposite directions, and the swap test gave no clear answer. What went wrong?",
+          "answer": "Nothing went wrong with the method; it correctly reported that the problem has a different shape. When the output is a set of pairs rather than a sequence, the adjacent swap has nothing to hold onto. The proof that does work: peel off the global extreme item, use a substitution lemma (replacing an item with an easier one never breaks a valid solution) to show which partner dominates, and recurse on what's left."
+        },
+        {
+          "question": "The greedy rule I found needs to look ahead for the best partner, which isn't a function of (T, k). Should the separability rule be widened?",
+          "answer": "Claude first proposed relabeling the state as two live pointers, and the learner rejected that as reverse-engineering from a known answer. The honest version: the swap and block-invariance tools don't generate the pairing strategy; this is a different proof shape. The 'lookahead' is not really lookahead, though. Iterating a simple two-end comparison over sorted data gives the best partner automatically."
+        },
+        {
+          "question": "So matching is simply 'sort by the key, then two pointers'?",
+          "answer": "Only when compatibility is a monotonic threshold under the key, meaning the valid partners of any item form a prefix or suffix of the sorted order. That condition has to be checked. It fails when items carry different values rather than just a count to maximize, because two pointers can check whether a pair fits but can't compare payoffs; those problems need matroid machinery. It also fails when compatibility is arbitrary, which is general matching. That calls for augmenting-path algorithms, a separate paradigm that is neither greedy nor DP. A problem 'feeling greedy' is a reason to try two pointers first, not proof it will work."
+        }
+      ]
+    },
+    {
+      "chapter": 6,
+      "title": "The fourth archetype and its honest limits",
+      "exchanges": [
+        {
+          "question": "Some problems don't choose a subset, an order, or pairs. Every item is used, and the objective is a max or a product. How do those fit?",
+          "answer": "The technique is different: derive an inequality every feasible solution must satisfy, then exhibit a construction that meets it exactly. Nothing can beat the bound and the construction achieves it, so it is optimal. No swap, exchange, or substitution argument is needed."
+        },
+        {
+          "question": "Is there a systematic way to find those bounds, like a set of inequalities to try?",
+          "answer": "There are useful tools: take the max of each item's own necessary condition, pigeonhole, averaging, and LP relaxation or duality. But when pressed, Claude admitted this list was pulled from the examples at hand. Many other bound techniques exist, and unlike matroids there is no theorem telling you which one a new problem needs. Always check that the construction matches the bound exactly. If it only comes close, that is an approximation guarantee, not an exact result."
+        },
+        {
+          "question": "So this category is really just a math problem with an extra construction step?",
+          "answer": "Yes. The first attempt to say what makes it different was wrong: 'the key depends only on the item' is true of every category, as the learner pointed out. The real difference is that the other three categories walk through sorted items while carrying a state that shapes later decisions. This one has no such walk. Its answer is an order-independent aggregate, and shuffling the input gives the same result. It is the same commutative aggregation seen in exploration greedy, except here it is the answer itself rather than a gate for the next step."
+        }
+      ]
+    },
+    {
+      "chapter": 7,
+      "title": "Refinements that made the framework usable",
+      "exchanges": [
+        {
+          "question": "Is the greedy key a function of (T, k), or usually just k?",
+          "answer": "In every verified case across all four archetypes, the key was a function of the item alone. There is a reason: a sort key that depended on running state couldn't be computed before sorting starts. T appears only in the proof and in the runtime strategy, never inside the key."
+        },
+        {
+          "question": "What does 'degrees of freedom' mean, and why check it first?",
+          "answer": "Count the independent choices in the raw solution space. Fix an early choice and see whether everything after it becomes forced. If the number of real candidate solutions stays constant no matter how big the input gets, there is nothing to optimize; it is a direct computation or simulation, not greedy. Every true greedy problem starts with an exponential space that the proof collapses. A large space is necessary but not sufficient, though: it can still turn out to be DP or NP-hard."
+        },
+        {
+          "question": "Checking for two maximal sets of different sizes sounds like more work than trial and error. And can I just sort ascending and descending once each?",
+          "answer": "A single spot check is weak evidence. Real stress testing is more work than the two-pass check. The two-pass check is asymmetric: unequal sizes is an airtight proof it isn't a matroid, but equal sizes proves nothing, because two passes only sample the space. A pairing constraint was shown to pass the check while not being a matroid. Practical recommendation: if the sizes differ, go to the Lagrangian. If they match, proceed as a matroid, treat it as a hypothesis, and let the usual brute-force stress test confirm it. Be extra careful when the items are pairs under a 'no shared endpoint' constraint."
+        },
+        {
+          "question": "This is overwhelming. Do competitive programmers actually derive all this, or do they memorize?",
+          "answer": "Under time pressure, they mostly recognize patterns and confirm them with stress tests against a brute-force solver. What separates reliable recognition from superstition is having derived each pattern once, so you know why it works and when a variation breaks it. Greedy really does lack a single DP-style template. The four archetypes are a compressed record of derivations, not a formula. The one habit to keep is asking what shape the output takes."
+        }
+      ]
+    }
+  ],
+  "final_framework": {
+    "universal_checks": [
+      "Separability: the decision at each step depends only on a compact state T and the current item; no unbounded lookahead.",
+      "The key itself is always a function of the item alone; T belongs to the proof and the runtime strategy.",
+      "Verify any nontrivial claim with a brute-force stress test before trusting it."
+    ],
+    "procedure": [
+      "0. Degrees of freedom: if independent choices grow with input size, a real optimization exists (it may still be DP or NP-hard). If they stay constant, it is simulation or direct computation, not greedy.",
+      "1. The greedy key is a function of the item alone.",
+      "2. Classify by output shape: an ordering (row 1), a subset (row 2), a pairing (row 3), or an assignment of everything (row 4).",
+      "2.1 A non-linear objective with no numeric per-item key suggests row 4.",
+      "2.2 If it looks like an ordering but the strategy needs a data structure rather than one number, suspect row 2. Confirm by checking whether different valid orders of the same subset give the same objective.",
+      "2.3 If it looks like matching but two pointers lack the information to decide at each step (for example, items carry values rather than just a count), suspect another row.",
+      "3.1 Row 1: sort by the key, then build the order while carrying a scalar T; the key comes from the adjacent-swap test (cancellation for sums, domination for bottlenecks).",
+      "3.2 Row 2: build maximal subsets with an ascending pass and a descending pass. Different sizes means not a matroid, so go to 3.3. Equal sizes means proceed as a matroid: sort by raw value and add an item whenever it keeps the set feasible, using a number comparison or a data structure as the constraint requires. Treat this as a hypothesis; the confirming stress test can usually be skipped for easy to medium problems, except for pairing-style constraints.",
+      "3.3 Lagrangian (one budget constraint): sort by reward/cost. If fractions are allowed, fill whole items, take one fractional piece, and stop (exact). If not, skip items that don't fit and keep going; this is a 2-approximation, exact only when all costs are equal.",
+      "4. Row 3: when compatibility is a monotonic threshold under the key, sort and use two pointers with while lo <= hi. Otherwise it is general matching, outside this framework.",
+      "5. Row 4: derive a bound every solution must satisfy, then construct a solution that meets it. Check that it meets it exactly; if it only comes close, you have an approximation guarantee, not an exact answer."
+    ],
+    "outside_the_framework": [
+      "General bipartite matching with arbitrary compatibility: augmenting-path algorithms.",
+      "NP-hard problems: no exact polynomial greedy, though greedy heuristics may carry approximation guarantees.",
+      "Problems with a constant number of real choices: direct computation, not optimization."
+    ]
+  }
+}

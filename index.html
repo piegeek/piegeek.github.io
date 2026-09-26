@@ -9,8 +9,8 @@
       content="Project dashboard of Sang Yeop Han — RISC-V CPU design, a relational DBMS built from scratch, an Ethereum survey dApp and a React Native notification app."
     />
 
-    <link rel="icon" type="image/png" href="/assets/logo_favicon.png" />
-    <link rel="apple-touch-icon" href="/assets/logo_favicon.png" />
+    <link rel="icon" type="image/png" href="/assets/img/logo_favicon.png" />
+    <link rel="apple-touch-icon" href="/assets/img/logo_favicon.png" />
 
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -19,9 +19,10 @@
       rel="stylesheet"
     />
 
-    <link rel="stylesheet" href="/assets/site.css" />
-    <link rel="stylesheet" href="/assets/dbms-simulator.css" />
-    <link rel="stylesheet" href="/assets/greedy-diagram.css" />
+    <link rel="stylesheet" href="/assets/css/tokens.css" />
+    <link rel="stylesheet" href="/assets/css/site.css" />
+    <link rel="stylesheet" href="/assets/css/dbms-simulator.css" />
+    <link rel="stylesheet" href="/assets/css/greedy-diagram.css" />
   </head>
   <body>
     <div class="shell">
@@ -34,11 +35,11 @@
       <main class="main">
         <header class="topbar">
           <h2 class="brand">
-            <img class="brand-logo" src="/assets/logo_favicon.png" alt="" />
+            <img class="brand-logo" src="/assets/img/logo_favicon.png" alt="" />
             SYH
           </h2>
           <!-- Top-level section switcher. Each .view is shown one at a
-               time; assets/app.js keeps it in sync with the URL hash. -->
+               time; assets/js/app.js keeps it in sync with the URL hash. -->
           <div class="view-tabs" id="viewTabs">
             <button class="view-tab is-on" type="button" data-view="portfolio" aria-current="true">
               Portfolio
@@ -64,7 +65,7 @@
         </section>
 
         <!-- --------------------------------------------- algorithms -->
-        <!-- Filled from ALGORITHMS in assets/data.js. The greedy block
+        <!-- Filled from ALGORITHMS in assets/js/data.js. The greedy block
              diagram mounts inline the first time this view is opened. -->
         <section class="view" data-view="algorithms" hidden>
           <h2 class="sr-only">Algorithms</h2>
@@ -99,7 +100,7 @@
 
     <!-- --------------------------------------------------------------
          Simple DBMS interactive demo. Cloned into the project detail
-         panel on open; assets/dbms-simulator.js wires it up.
+         panel on open; assets/js/dbms-simulator.js wires it up.
          -------------------------------------------------------------- -->
     <template id="tpl-dbms-simulator">
 
@@ -207,9 +208,9 @@
 
     </template>
 
-    <script src="/assets/data.js"></script>
-    <script src="/assets/dbms-simulator.js"></script>
-    <script src="/assets/greedy-diagram.js"></script>
-    <script src="/assets/app.js"></script>
+    <script src="/assets/js/data.js"></script>
+    <script src="/assets/js/dbms-simulator.js"></script>
+    <script src="/assets/js/greedy-diagram.js"></script>
+    <script src="/assets/js/app.js"></script>
   </body>
 </html>

@@ -6,7 +6,7 @@ SCOPE
 This license covers only the Greedy Key Strategy write-up:
 
   - everything in greedy-key-strategy/ (including strategy.json)
-  - the ALGORITHMS entry in assets/data.js (the Algorithms section text)
+  - the ALGORITHMS entry in assets/js/data.js (the Algorithms section text)
   - the block diagram and its explanations as shown at
     https://piegeek.github.io/#algorithms
 

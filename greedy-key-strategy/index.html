@@ -1,0 +1,940 @@
+<!-- Shell for a markdown series, filled in by build.py.
+
+     The body placeholder below is replaced with every post in the
+     series, one section each. Edit this file to change the chrome
+     around all of them at once; edit the markdown in posts/ to change
+     what they say. Do not write a placeholder name inside a comment —
+     substitution is a plain text replace and would fill that in too. -->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>A Structured Approach to All (Most) Greedy Problems — Sang Yeop Han</title>
+<meta name="description" content="A seven-part derivation of a framework for finding the greedy key, greedy strategy: just follow one of four archetypes">
+<link rel="icon" type="image/png" href="/assets/img/logo_favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,400;0,500;0,600;1,400;1,600&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;1,8..60,400&display=swap">
+<link rel="stylesheet" href="/assets/css/tokens.css">
+<link rel="stylesheet" href="/assets/css/post.css">
+</head>
+<body>
+
+
+<header class="bar"><div class="bar-in"><span class="bar-nav"><a class="back" href="/#algorithms">Algorithms</a><span class="sep">/</span><a class="here" href="#index">A Structured Approach to All (Most) Greedy Problems</a></span><span class="part" id="partLabel">Series · 7 parts</span></div></header>
+
+<main>
+
+<!-- ============ INDEX ============ -->
+<section id="index" data-page data-part="Series · 7 parts">
+  <p class="kicker">A seven-part series</p>
+  <h1>A Structured Approach to All (Most) Greedy Problems</h1>
+  <p class="dek">Most, if not all, algorithms textbooks don't really tell you how to get to the correct greedy algorithm. They only tell you to use the "exchange argument" to prove a solution that you have to come up with through intuition. Is there a structured process that can change this? That's what motivated this framework.</p>
+  <div class="byline"><span>Notes on building a greedy framework</span><span>·</span><span>7 posts</span></div>
+  <figure>
+  <svg viewBox="0 0 680 220" role="img" aria-label="A search tree whose branches narrow to a single highlighted path">
+    <g stroke-width="1.5" fill="none">
+      <path class="s-rule" d="M340 30 L160 90 M340 30 L280 90 M340 30 L400 90 M340 30 L520 90 M160 90 L100 150 M160 90 L190 150 M280 90 L250 150 M280 90 L310 150 M400 90 L370 150 M400 90 L430 150 M520 90 L490 150 M520 90 L580 150 M100 150 L80 200 M190 150 L200 200 M250 150 L240 200 M430 150 L440 200 M490 150 L500 200 M580 150 L600 200 M370 150 L360 200"/>
+      <path class="s-acc" stroke-width="3.5" d="M340 30 L400 90 L370 150 L360 200"/>
+    </g>
+    <g>
+      <circle class="f-acc" cx="340" cy="30" r="8"/>
+      <circle class="f-mut" cx="160" cy="90" r="5"/><circle class="f-mut" cx="280" cy="90" r="5"/><circle class="f-acc" cx="400" cy="90" r="8"/><circle class="f-mut" cx="520" cy="90" r="5"/>
+      <circle class="f-mut" cx="100" cy="150" r="4"/><circle class="f-mut" cx="190" cy="150" r="4"/><circle class="f-mut" cx="250" cy="150" r="4"/><circle class="f-mut" cx="310" cy="150" r="4"/><circle class="f-acc" cx="370" cy="150" r="8"/><circle class="f-mut" cx="430" cy="150" r="4"/><circle class="f-mut" cx="490" cy="150" r="4"/><circle class="f-mut" cx="580" cy="150" r="4"/>
+      <circle class="f-acc" cx="360" cy="200" r="8"/>
+    </g>
+    <text class="svgt f-mut" x="20" y="36">DP explores every branch</text>
+    <text class="svgt f-acc" x="440" y="205">greedy proves one path is enough</text>
+  </svg>
+</figure>
+  <p>Dynamic programming has a recipe. You write down a state, a transition, and a base case, and correctness comes for free because you are just searching everything efficiently. Greedy algorithms never felt like that to me. Each one seemed to come with its own trick: sort by ratio here, by deadline there, by end point somewhere else. Whether I could solve a greedy problem depended on whether I had seen it before.</p>
+  <p>This series records how that changed. I set out to find a way to <em>derive</em> greedy keys and strategies instead of recalling them or blindly relying on some intangible sense of intuition. By the end, I had four archetypes, a short diagnostic funnel for telling them apart, and a clear line around the problems that don't belong to greedy at all.</p>
+  <p>Each post picks up where the last one stopped, so reading in order works best.</p>
+  <h2>The posts</h2>
+  <ol class="toc">
+    <li><a href="#ch1"><span class="n">01</span><span class="t">The starting frustration</span><span class="d">Why textbook exchange arguments verify a key but never find one, and why no universal key formula can exist.</span></a></li>
+    <li><a href="#ch2"><span class="n">02</span><span class="t">Exploration greedy: The groundwork for all greedy archetypes that follow</span><span class="d">The greedy key is just f(k). Sort by it. Build the solution from it.</span></a></li>
+    <li><a href="#ch3"><span class="n">03</span><span class="t">When the state needs a data structure, it's subset greedy</span><span class="d">Why "built one piece at a time" is not the same as "building an order."</span></a></li>
+    <li><a href="#ch4"><span class="n">04</span><span class="t">Decision greedy: matroids and the Lagrangian</span><span class="d">Testing the constraint before the objective, and where "sort by ratio" really comes from.</span></a></li>
+    <li><a href="#ch5"><span class="n">05</span><span class="t">Matching problems, archetype 3</span><span class="d">When the swap test has nothing to hold on to, and when two pointers are enough.</span></a></li>
+    <li><a href="#ch6"><span class="n">06</span><span class="t">The fourth archetype and its honest limits</span><span class="d">Problems that are really a bound plus a construction, and why that makes them math, not greedy.</span></a></li>
+    <li><a href="#ch7"><span class="n">07</span><span class="t">Refinements that made the framework usable</span><span class="d">Degrees of freedom, the limits of quick tests, and the final checklist.</span></a></li>
+  </ol>
+</section>
+
+<!-- ============ CH1 ============ -->
+<article id="ch1" data-page data-part="Part 1 of 7" hidden>
+  <p class="kicker">Part 1 · A Structured Approach to All (Most) Greedy Problems</p>
+  <h1>The starting frustration</h1>
+  <p class="dek">Exchange arguments verify a greedy key once you have it. I wanted a way to find the key in the first place.</p>
+  <div class="byline"><span>~9 min read</span></div>
+  <figure>
+  <svg viewBox="0 0 680 200" role="img" aria-label="A lock labelled 'exchange argument' next to a key labelled with a question mark">
+    <rect class="f-soft" x="0" y="0" width="680" height="200" rx="4"/>
+    <g fill="none" stroke-width="3">
+      <rect class="s-ink" x="120" y="80" width="120" height="90" rx="8"/>
+      <path class="s-ink" d="M145 80 V55 a35 35 0 0 1 70 0 V80"/>
+      <circle class="s-ink" cx="180" cy="118" r="10"/>
+      <path class="s-ink" d="M180 128 V150"/>
+    </g>
+    <text class="svgt f-ink" x="180" y="192" text-anchor="middle">exchange argument: checks a key</text>
+    <g fill="none" stroke-width="3" class="s-acc">
+      <circle cx="430" cy="110" r="32"/>
+      <path d="M462 110 H590 M560 110 V135 M585 110 V128"/>
+    </g>
+    <text class="svgm f-acc" x="430" y="118" text-anchor="middle" font-size="30">?</text>
+    <text class="svgt f-acc" x="500" y="192" text-anchor="middle">where does the key come from?</text>
+  </svg>
+</figure>
+  <h2>Two kinds of DP</h2>
+  <p>I came in with a mental model I trusted for dynamic programming. Optimization DPs come in two shapes. <strong>Exploration DP</strong> builds a permutation: at each step you pick which unvisited item comes next.</p>
+  <pre><code>for i in range(n):
+    if not (visited &amp; (1 &lt;&lt; i)):
+        best = max(best, cost[i] + dp(i, visited | (1 &lt;&lt; i)))</code></pre>
+  <p><strong>Decision DP</strong> builds a subset: walk the items in a fixed order and decide, for each one, take it or skip it.</p>
+  <pre><code>best = dp(idx + 1, C)                                    # skip
+best = max(best, cost[idx] + dp(idx + 1, C + cap[idx]))  # take</code></pre>
+  <p>Greedy, the usual story goes, is a special case of DP where you never need to branch. So I expected greedy to split the same way: <em>exploration greedy</em> builds an order greedily, and <em>decision greedy</em> builds a subset greedily. That part held up. What didn't hold up was the word "greedily." Build it greedily by <em>what</em>?</p>
+  <h2>What the textbooks give you</h2>
+  <p>The standard answer has two steps: prove the greedy choice property with an exchange argument, then show optimal substructure. The trouble is the order of operations. An exchange argument takes a key you already have, say "sort by deadline," and checks that swapping two out-of-order items never hurts. It verifies. It doesn't generate. Somebody has to hand you the key first.</p>
+  <p>I also tried reading the key off a working DP. Write the recurrence, stare at the transitions, look for the pattern. That can't work, and it's worth saying why: the recurrence encodes <em>what</em> happens at each step, not <em>why</em> one choice would always beat another. The reason a swap is safe lives in the objective and the constraints, one level above the code.</p>
+  <div class="q"><span class="lab">The question</span><p>Is there a general, mathematical way to derive the greedy key, rather than recognizing it from a problem I've already seen? Something that works in every scenario?</p></div>
+  <h2>A detour: the potential function</h2>
+  <p>I had asked ChatGPT the same question, and it offered something that sounded like exactly what I wanted:</p>
+  <div class="eq">a* = argmin<sub>a</sub> Φ(T<sub>a</sub>(s))</div>
+  <p>where Φ is "some monotone potential measuring future regret." Every greedy algorithm, it said, is almost minimizing a potential.</p>
+  <div class="q"><span class="lab">The question</span><p>Is this the missing universal equation?</p></div>
+  <p>It's true, but it's empty. If Φ is the true optimal cost of the remaining problem, then picking the action that minimizes it is just Bellman's principle of optimality with an oracle. That holds for <em>every</em> optimization problem, including the bag problem above, which has no greedy solution. An idea that applies equally to problems that have greedy solutions and problems that don't can't explain which is which.</p>
+  <p>The real content is in what the formula skips. It only becomes something you can compute when the future cost collapses onto a small summary of the state (elapsed time, remaining capacity) and behaves simply in it. Finding that summary, and proving it's enough, is the whole job. The swap test in the next post is exactly the check for that.</p>
+  <nav class="pn"><a href="#index"><small>Back to</small><span>Series overview</span></a><a class="next" href="#ch2"><small>Next</small><span>Exploration greedy: the two-item swap</span></a></nav>
+</article>
+
+<!-- ============ CH2 ============ -->
+<article id="ch2" data-page data-part="Part 2 of 7" hidden>
+  <p class="kicker">Part 2 · A Structured Approach to All (Most) Greedy Problems</p>
+  <h1>Exploration greedy: The groundwork for all greedy archetypes that follow</h1>
+  <p class="dek">The greedy key falls out as a pure function of k. Separability and Block-invariance proves this, which is a clearer restatement of the conventional exchange argument.</p>
+  <div class="byline"><span>~15 min read</span></div>
+  <h2>The conclusion first</h2>
+  <p>Exploration greedy, a greedy subtype where we have to build up a permutation to solve the problem. You can think of it as similar to permutation dp, where ordering matters in a problem.</p>
+  <p>All things aside, I'll just plainly give you the final conclusion as to how to solve these types of problems.</p>
+  <p>First, identify the greedy key and some scalar sufficient statistic T that summarizes the past of the prefix. Here, the greedy key is always a function of item[k], where item[k] is the input.</p>
+  <p>As you might've guessed, if the input is not a numerical array, then we can't derive the key using this method, so you can assume that almost always the solution to the problem is not going to be about building up a ordering. Instead, we're going to talk about that type of problem in a later section.</p>
+  <p>Another thing to note is that I've mentioned T must be a scalar. While solving the problem, you have the suspicion that you might need a data structure (heap, stack, etc) to keep track of this prefix, then it's not permutation greedy, but subset greedy. We'll dive deep into it in the next post so stay tuned.</p>
+  <p>Once you've found the greedy key as f(k), all there is left is building the ordering that matches the problem's specification.</p>
+  <p>This is where T comes in. While building the order, we need to perform feasibility checks to see if we can append the candidate to our solution array. Here, we check against T, which is a compressed history of the past (think of the Markov property).</p>
+  <figure>
+  <svg viewBox="0 0 680 222" role="img" aria-label="Pipeline: items, a key computed from each item alone, sort, then build while checking a single number T. If T needs a heap or stack, suspect subset greedy.">
+    <rect class="f-soft" x="0" y="0" width="680" height="222" rx="4"/>
+    <rect class="f-surf" x="18" y="34" width="112" height="54" rx="3"/>
+    <text class="svgt f-ink" x="74.0" y="57" text-anchor="middle" font-weight="600">items</text>
+    <text class="svgt f-mut" x="74.0" y="77" text-anchor="middle">3 · 7 · 2 · 5</text>
+    <rect class="f-acc" x="156" y="34" width="128" height="54" rx="3"/>
+    <text class="svgt f-bg" x="220.0" y="57" text-anchor="middle" font-weight="600">key</text>
+    <text class="svgm f-bg" x="220.0" y="77" text-anchor="middle">f(item[k])</text>
+    <rect class="f-surf" x="310" y="34" width="96" height="54" rx="3"/>
+    <text class="svgt f-ink" x="358.0" y="57" text-anchor="middle" font-weight="600">sort</text>
+    <text class="svgt f-mut" x="358.0" y="77" text-anchor="middle">by key</text>
+    <rect class="f-surf" x="432" y="34" width="120" height="54" rx="3"/>
+    <text class="svgt f-ink" x="492.0" y="57" text-anchor="middle" font-weight="600">build</text>
+    <text class="svgt f-mut" x="492.0" y="77" text-anchor="middle">checking T</text>
+    <rect class="f-surf" x="578" y="34" width="84" height="54" rx="3"/>
+    <text class="svgt f-ink" x="620.0" y="66" text-anchor="middle" font-weight="600">order</text>
+    <line class="s-mut" x1="133" y1="61" x2="146.0" y2="61.0" stroke-width="1.5"/>
+    <path class="f-mut" d="M153.0 61.0 L146.0 57.1 L146.0 64.8 Z"/>
+    <line class="s-mut" x1="287" y1="61" x2="300.0" y2="61.0" stroke-width="1.5"/>
+    <path class="f-mut" d="M307.0 61.0 L300.0 57.1 L300.0 64.8 Z"/>
+    <line class="s-mut" x1="409" y1="61" x2="422.0" y2="61.0" stroke-width="1.5"/>
+    <path class="f-mut" d="M429.0 61.0 L422.0 57.1 L422.0 64.8 Z"/>
+    <line class="s-mut" x1="555" y1="61" x2="568.0" y2="61.0" stroke-width="1.5"/>
+    <path class="f-mut" d="M575.0 61.0 L568.0 57.1 L568.0 64.8 Z"/>
+    <rect class="f-acc" x="457" y="132" width="70" height="38" rx="3"/>
+    <text class="svgm f-bg" x="492" y="157" text-anchor="middle">T</text>
+    <line class="s-mut" x1="492" y1="88" x2="492" y2="132" stroke-width="1.5"/>
+    <text class="svgt f-mut" x="500" y="114">reads and updates</text>
+    <text class="svgt f-mut" x="492" y="196" text-anchor="middle">one number: the prefix, compressed</text>
+    <rect class="f-soft s-mut" x="40" y="126" width="300" height="50" rx="3" fill="none" stroke-width="1.5" stroke-dasharray="5 4"/>
+    <text class="svgt f-ink" x="190" y="147" text-anchor="middle">T needs a heap or stack instead?</text>
+    <text class="svgt f-mut" x="190" y="166" text-anchor="middle">suspect subset greedy · Part 3</text>
+    <line class="s-mut" x1="455" y1="151" x2="351.0" y2="151.0" stroke-width="1.5" stroke-dasharray="5 4"/>
+    <path class="f-mut" d="M344.0 151.0 L351.0 154.8 L351.0 147.2 Z"/>
+  </svg>
+  <figcaption>The whole method in one line: compute a key from each item alone, sort by it, then build the order while carrying one number, T. If carrying T takes a data structure, you are probably not building an order at all.</figcaption>
+</figure>
+  <p>Now, for those of you who might want to know the technical details of how this works, there are two things you must understand.</p>
+  <ol><li>Separability</li><li>Block invariance</li></ol>
+  <p>These two terms are just technical jargon as to why the greedy key must be a pure function of k. Also, it provides a mathematical baseline against which we can verify our greedy strategy will produce the optimal solution. You can think of it as another way of viewing the exchange argument that you may be familiar with. By using these two terms, instead of going through the tedious process of verifying an alternative solution can be reduced to the greedy solution without losing optimality, we can just mechanically check a two-item swap at each step <em>repeatedly</em></p>
+  <p>Notice <em>repeatedly</em> is in italics. It's nuanced. Formally, given enough time, we should iteratively go through the swap process like we would do with the exchange argument, but for coming up with a greedy solution and checking its validity on a small set of examples, using this method is much faster, cleaner, and straightforward. You probably only have to do the swap only once practically.</p>
+  <p>The details are as follows.</p>
+  <h2>Separability</h2>
+  <p>Greedy key must always be a pure function of the property of item of interest - k. Thus greedy_key = f(item[k])</p>
+  <p>Another way to put it:</p>
+  <p>Each term k depends on its own data, never on the identity of whichever job happens to sit next to it.</p>
+  <figure>
+  <svg viewBox="0 0 680 232" role="img" aria-label="Five neighbouring items; only item k feeds its key. Its neighbours are not an input.">
+    <rect class="f-soft" x="0" y="0" width="680" height="232" rx="4"/>
+    <rect class="f-surf" x="68" y="40" width="96" height="46" rx="3"/>
+    <text class="svgm f-mut" x="116" y="69" text-anchor="middle">k−2</text>
+    <rect class="f-surf" x="180" y="40" width="96" height="46" rx="3"/>
+    <text class="svgm f-mut" x="228" y="69" text-anchor="middle">k−1</text>
+    <rect class="f-acc" x="292" y="40" width="96" height="46" rx="3"/>
+    <text class="svgm f-bg" x="340" y="69" text-anchor="middle">k</text>
+    <rect class="f-surf" x="404" y="40" width="96" height="46" rx="3"/>
+    <text class="svgm f-mut" x="452" y="69" text-anchor="middle">k+1</text>
+    <rect class="f-surf" x="516" y="40" width="96" height="46" rx="3"/>
+    <text class="svgm f-mut" x="564" y="69" text-anchor="middle">k+2</text>
+    <rect class="f-soft s-acc" x="220" y="150" width="240" height="44" rx="3" fill="none" stroke-width="2"/>
+    <text class="svgm f-ink" x="340" y="178" text-anchor="middle">key(k) = f(item[k])</text>
+    <line class="s-acc" x1="340" y1="88" x2="340.0" y2="141.0" stroke-width="2"/>
+    <path class="f-acc" d="M340.0 148.0 L343.9 141.0 L336.1 141.0 Z"/>
+    <line class="s-rule" x1="228" y1="88" x2="296" y2="150" stroke-width="1.5" stroke-dasharray="5 4"/>
+    <text class="svgt f-mut" x="262" y="124" text-anchor="middle">×</text>
+    <line class="s-rule" x1="452" y1="88" x2="384" y2="150" stroke-width="1.5" stroke-dasharray="5 4"/>
+    <text class="svgt f-mut" x="418" y="124" text-anchor="middle">×</text>
+    <text class="svgt f-mut" x="236" y="124" text-anchor="end">not an input</text>
+    <text class="svgt f-mut" x="444" y="124">not an input</text>
+    <text class="svgt f-mut" x="340" y="220" text-anchor="middle">the same key wherever k sits, which is what makes sorting legal</text>
+  </svg>
+  <figcaption>Separability: the key is read off the item alone. Nothing about its neighbours, or about where it ends up, goes in.</figcaption>
+</figure>
+  <h2>Block Invariance</h2>
+  <p>Given T, we check two possible input orders based on a given greedy key candidate and swap them. if cost(i, j | T) <= cost(j, i | T) and freedom(i, j | T) >= freedom(j, i | T) then we can conclude our greedy key choice was correct.</p>
+  <figure>
+  <svg viewBox="0 0 680 232" role="img" aria-label="Both orders of the pair finish at T plus p_i plus p_j, so the suffix starts from the same state.">
+    <rect class="f-soft" x="0" y="0" width="680" height="232" rx="4"/>
+    <text class="svgt f-mut" x="20" y="71">i first</text>
+    <rect class="f-surf" x="96" y="46" width="140" height="40" rx="3"/>
+    <text class="svgt f-ink" x="166" y="71" text-anchor="middle">prefix, state T</text>
+    <rect class="f-acc" x="236" y="46" width="110" height="40" rx="3"/>
+    <text class="svgm f-bg" x="291.0" y="72" text-anchor="middle">i</text>
+    <rect class="f-mut" x="346" y="46" width="80" height="40" rx="3"/>
+    <text class="svgm f-bg" x="386.0" y="72" text-anchor="middle">j</text>
+    <rect class="f-surf" x="426" y="46" width="214" height="40" rx="3"/>
+    <text class="svgt f-ink" x="533" y="71" text-anchor="middle">starts from the same state</text>
+    <text class="svgt f-mut" x="20" y="141">j first</text>
+    <rect class="f-surf" x="96" y="116" width="140" height="40" rx="3"/>
+    <text class="svgt f-ink" x="166" y="141" text-anchor="middle">prefix, state T</text>
+    <rect class="f-mut" x="236" y="116" width="80" height="40" rx="3"/>
+    <text class="svgm f-bg" x="276.0" y="142" text-anchor="middle">j</text>
+    <rect class="f-acc" x="316" y="116" width="110" height="40" rx="3"/>
+    <text class="svgm f-bg" x="371.0" y="142" text-anchor="middle">i</text>
+    <rect class="f-surf" x="426" y="116" width="214" height="40" rx="3"/>
+    <text class="svgt f-ink" x="533" y="141" text-anchor="middle">starts from the same state</text>
+    <line class="s-acc" x1="426" y1="34" x2="426" y2="164" stroke-width="2"/>
+    <text class="svgt f-ink" x="426" y="24" text-anchor="middle">both orders finish the pair at T + p<tspan dy="4" font-size="9.75">i</tspan><tspan dy="-4"> + p</tspan><tspan dy="4" font-size="9.75">j</tspan></text>
+    <text class="svgt f-mut" x="340" y="194" text-anchor="middle">cost(i, j | T) and cost(j, i | T) can differ; nothing after the line can</text>
+    <text class="svgt f-mut" x="340" y="214" text-anchor="middle">the freedom handed on is equal, so the pair’s own cost decides</text>
+  </svg>
+  <figcaption>Block invariance: the pair ends at the same moment in both orders, so the suffix cannot tell them apart.</figcaption>
+</figure>
+  <h2>Now how do these two concepts relate to what we've discussed earlier?</h2>
+  <p>You might wonder why separability and block invariance matters at at all, and where they come from in the first place.</p>
+  <p>Remember, the key thing for you to remember in the first type of archetypes of greedy (there are a total of four, BTW), exploration greedy (or permuation greedy), is that 1. You sort by a numeric value given to you as input, 2. Then build up an array that matches the specifications of the problem.</p>
+  <p>Once you've found the greedy key, it basically reduces to a simulation/implementation problem.</p>
+  <p>However, mathematically proving why the greedy key can be derived solely from a numeric input might make you confused.</p>
+  <p>This is where the aforementioned two concepts, separability and block invariance come in.</p>
+  <figure>
+  <svg viewBox="0 0 680 222" role="img" aria-label="Two layers. What you do: sort by key, then build while checking T. Why it is allowed: separability under the sort, block invariance under the build.">
+    <rect class="f-soft" x="0" y="0" width="680" height="222" rx="4"/>
+    <text class="svgt f-mut" x="20" y="24" font-weight="600">WHAT YOU DO</text>
+    <text class="svgt f-mut" x="20" y="140" font-weight="600">WHY IT’S ALLOWED</text>
+    <rect class="f-surf" x="20" y="34" width="250" height="44" rx="3"/>
+    <text class="svgt f-ink" x="145" y="61" text-anchor="middle">sort by key(k)</text>
+    <rect class="f-surf" x="330" y="34" width="330" height="44" rx="3"/>
+    <text class="svgt f-ink" x="495" y="61" text-anchor="middle">build the order, checking T</text>
+    <line class="s-mut" x1="273" y1="56" x2="320.0" y2="56.0" stroke-width="1.5"/>
+    <path class="f-mut" d="M327.0 56.0 L320.0 52.1 L320.0 59.9 Z"/>
+    <rect class="f-soft s-acc" x="20" y="150" width="250" height="54" rx="3" fill="none" stroke-width="2"/>
+    <text class="svgt f-ink" x="145" y="172" text-anchor="middle" font-weight="600">separability</text>
+    <text class="svgt f-mut" x="145" y="192" text-anchor="middle">a fixed sort order exists</text>
+    <rect class="f-soft s-acc" x="330" y="150" width="330" height="54" rx="3" fill="none" stroke-width="2"/>
+    <text class="svgt f-ink" x="495" y="172" text-anchor="middle" font-weight="600">block invariance</text>
+    <text class="svgt f-mut" x="495" y="192" text-anchor="middle">a two-item swap judges the whole order</text>
+    <line class="s-acc" x1="145" y1="148" x2="145.0" y2="88.0" stroke-width="2"/>
+    <path class="f-acc" d="M145.0 81.0 L141.2 88.0 L148.8 88.0 Z"/>
+    <line class="s-acc" x1="495" y1="148" x2="495.0" y2="88.0" stroke-width="2"/>
+    <path class="f-acc" d="M495.0 81.0 L491.1 88.0 L498.9 88.0 Z"/>
+  </svg>
+  <figcaption>Sorting and simulating is the part you run. Separability and block invariance are what make each of those two moves safe.</figcaption>
+</figure>
+  <p>Let's take a deeper dive.</p>
+  <h2>The exchange argument</h2>
+  <p>For many of those of you who've been familiar with algorithm textbooks, is that you would find the "exchange argument" every time you read the greedy algorithm section.</p>
+  <p>In many books, they don't go deep into the details on why that is, it just states that proving a greedy strategy comes in two steps, first, by proving the greedy property through an exchange argument, then proving optimal substructure.</p>
+  <p>The exchange argument usually runs in four steps (<a href="https://en.wikipedia.org/wiki/Greedy_algorithm">Wikipedia</a>):</p>
+  <ol><li>Suppose some optimal solution O differs from the greedy solution G.</li><li>Find the first point where O and G make a different choice.</li><li>Show that swapping O's choice at that point for G's choice can't make O any worse.</li><li>Repeat at the next difference, and the next. <em>Gradually</em>, O turns into G without ever getting worse, so by induction G is optimal too.</li></ol>
+  <figure>
+  <svg viewBox="0 0 680 580" role="img" aria-label="Weighted completion time with four jobs. A table defines p, w and w over p for jobs A to D. The order CDBA costs 99; three exchanges at the first difference give ADBC at 72, ABDC at 60 and the greedy order ABCD at 54.">
+    <rect class="f-soft" x="0" y="0" width="680" height="580" rx="4"/>
+    <text class="svgt f-ink" x="20" y="28" font-weight="600">One machine, four jobs, run back to back</text>
+    <text class="svgt f-mut" x="24" y="58">job</text>
+    <text class="svgt f-ink" x="110" y="58" text-anchor="middle" font-weight="600">A</text>
+    <text class="svgt f-ink" x="150" y="58" text-anchor="middle" font-weight="600">B</text>
+    <text class="svgt f-ink" x="190" y="58" text-anchor="middle" font-weight="600">C</text>
+    <text class="svgt f-ink" x="230" y="58" text-anchor="middle" font-weight="600">D</text>
+    <text class="svgm f-mut" x="24" y="82">p</text>
+    <text class="svgt f-ink" x="110" y="82" text-anchor="middle">1</text>
+    <text class="svgt f-ink" x="150" y="82" text-anchor="middle">2</text>
+    <text class="svgt f-ink" x="190" y="82" text-anchor="middle">3</text>
+    <text class="svgt f-ink" x="230" y="82" text-anchor="middle">4</text>
+    <text class="svgm f-mut" x="24" y="106">w</text>
+    <text class="svgt f-ink" x="110" y="106" text-anchor="middle">4</text>
+    <text class="svgt f-ink" x="150" y="106" text-anchor="middle">4</text>
+    <text class="svgt f-ink" x="190" y="106" text-anchor="middle">3</text>
+    <text class="svgt f-ink" x="230" y="106" text-anchor="middle">2</text>
+    <text class="svgm f-mut" x="24" y="130">w/p</text>
+    <text class="svgt f-ink" x="110" y="130" text-anchor="middle">4</text>
+    <text class="svgt f-ink" x="150" y="130" text-anchor="middle">2</text>
+    <text class="svgt f-ink" x="190" y="130" text-anchor="middle">1</text>
+    <text class="svgt f-ink" x="230" y="130" text-anchor="middle">0.5</text>
+    <line class="s-rule" x1="20" y1="66" x2="250" y2="66" stroke-width="1"/>
+    <text class="svgt f-ink" x="290" y="52">p = time the job takes</text>
+    <text class="svgt f-ink" x="290" y="74">w = weight: cost per unit of finish time</text>
+    <text class="svgt f-ink" x="290" y="96">C = finish time (the running total of p)</text>
+    <text class="svgt f-ink" x="290" y="118">cost of an order = Σ w·C over all four jobs</text>
+    <text class="svgt f-ink" x="290" y="140">G = greedy order: sort by w/p, largest first</text>
+    <text class="svgt f-ink" x="290" y="162">O = any other order, e.g. a claimed optimum</text>
+    <line class="s-rule" x1="20" y1="186" x2="660" y2="186" stroke-width="1"/>
+    <text class="svgt f-mut" x="372" y="206">cost = Σ w·C</text>
+    <text class="svgm f-ink" x="24" y="239">O</text>
+    <rect class="f-surf" x="70" y="216" width="78" height="34" rx="3"/>
+    <text class="svgm f-ink" x="109.0" y="239" text-anchor="middle">C</text>
+    <line class="s-mut" x1="148" y1="252" x2="148" y2="258" stroke-width="1"/>
+    <text class="svgt f-mut" x="148" y="271" text-anchor="middle">3</text>
+    <rect class="f-surf" x="148" y="216" width="104" height="34" rx="3"/>
+    <text class="svgm f-ink" x="200.0" y="239" text-anchor="middle">D</text>
+    <line class="s-mut" x1="252" y1="252" x2="252" y2="258" stroke-width="1"/>
+    <text class="svgt f-mut" x="252" y="271" text-anchor="middle">7</text>
+    <rect class="f-surf" x="252" y="216" width="52" height="34" rx="3"/>
+    <text class="svgm f-ink" x="278.0" y="239" text-anchor="middle">B</text>
+    <line class="s-mut" x1="304" y1="252" x2="304" y2="258" stroke-width="1"/>
+    <text class="svgt f-mut" x="304" y="271" text-anchor="middle">9</text>
+    <rect class="f-surf" x="304" y="216" width="26" height="34" rx="3"/>
+    <text class="svgm f-ink" x="317.0" y="239" text-anchor="middle">A</text>
+    <line class="s-mut" x1="330" y1="252" x2="330" y2="258" stroke-width="1"/>
+    <text class="svgt f-mut" x="330" y="271" text-anchor="middle">10</text>
+    <text class="svgm f-mut" x="62" y="271" text-anchor="end">C</text>
+    <text class="svgt f-ink" x="372" y="239">3·3 + 2·7 + 4·9 + 4·10 = 99</text>
+    <rect class="f-acc" x="70" y="300" width="26" height="34" rx="3"/>
+    <text class="svgm f-bg" x="83.0" y="323" text-anchor="middle">A</text>
+    <line class="s-mut" x1="96" y1="336" x2="96" y2="342" stroke-width="1"/>
+    <text class="svgt f-mut" x="96" y="355" text-anchor="middle">1</text>
+    <rect class="f-surf" x="96" y="300" width="104" height="34" rx="3"/>
+    <text class="svgm f-ink" x="148.0" y="323" text-anchor="middle">D</text>
+    <line class="s-mut" x1="200" y1="336" x2="200" y2="342" stroke-width="1"/>
+    <text class="svgt f-mut" x="200" y="355" text-anchor="middle">5</text>
+    <rect class="f-surf" x="200" y="300" width="52" height="34" rx="3"/>
+    <text class="svgm f-ink" x="226.0" y="323" text-anchor="middle">B</text>
+    <line class="s-mut" x1="252" y1="336" x2="252" y2="342" stroke-width="1"/>
+    <text class="svgt f-mut" x="252" y="355" text-anchor="middle">7</text>
+    <rect class="f-surf" x="252" y="300" width="78" height="34" rx="3"/>
+    <text class="svgm f-ink" x="291.0" y="323" text-anchor="middle">C</text>
+    <line class="s-mut" x1="330" y1="336" x2="330" y2="342" stroke-width="1"/>
+    <text class="svgt f-mut" x="330" y="355" text-anchor="middle">10</text>
+    <text class="svgm f-mut" x="62" y="355" text-anchor="end">C</text>
+    <text class="svgt f-ink" x="372" y="323">4·1 + 2·5 + 4·7 + 3·10 = 72</text>
+    <text class="svgt f-mut" x="372" y="288">position 1 differs: exchange C ↔ A</text>
+    <rect class="f-acc" x="70" y="384" width="26" height="34" rx="3"/>
+    <text class="svgm f-bg" x="83.0" y="407" text-anchor="middle">A</text>
+    <line class="s-mut" x1="96" y1="420" x2="96" y2="426" stroke-width="1"/>
+    <text class="svgt f-mut" x="96" y="439" text-anchor="middle">1</text>
+    <rect class="f-acc" x="96" y="384" width="52" height="34" rx="3"/>
+    <text class="svgm f-bg" x="122.0" y="407" text-anchor="middle">B</text>
+    <line class="s-mut" x1="148" y1="420" x2="148" y2="426" stroke-width="1"/>
+    <text class="svgt f-mut" x="148" y="439" text-anchor="middle">3</text>
+    <rect class="f-surf" x="148" y="384" width="104" height="34" rx="3"/>
+    <text class="svgm f-ink" x="200.0" y="407" text-anchor="middle">D</text>
+    <line class="s-mut" x1="252" y1="420" x2="252" y2="426" stroke-width="1"/>
+    <text class="svgt f-mut" x="252" y="439" text-anchor="middle">7</text>
+    <rect class="f-surf" x="252" y="384" width="78" height="34" rx="3"/>
+    <text class="svgm f-ink" x="291.0" y="407" text-anchor="middle">C</text>
+    <line class="s-mut" x1="330" y1="420" x2="330" y2="426" stroke-width="1"/>
+    <text class="svgt f-mut" x="330" y="439" text-anchor="middle">10</text>
+    <text class="svgm f-mut" x="62" y="439" text-anchor="end">C</text>
+    <text class="svgt f-ink" x="372" y="407">4·1 + 4·3 + 2·7 + 3·10 = 60</text>
+    <text class="svgt f-mut" x="372" y="372">position 2 differs: exchange D ↔ B</text>
+    <text class="svgm f-ink" x="24" y="491">G</text>
+    <rect class="f-acc" x="70" y="468" width="26" height="34" rx="3"/>
+    <text class="svgm f-bg" x="83.0" y="491" text-anchor="middle">A</text>
+    <line class="s-mut" x1="96" y1="504" x2="96" y2="510" stroke-width="1"/>
+    <text class="svgt f-mut" x="96" y="523" text-anchor="middle">1</text>
+    <rect class="f-acc" x="96" y="468" width="52" height="34" rx="3"/>
+    <text class="svgm f-bg" x="122.0" y="491" text-anchor="middle">B</text>
+    <line class="s-mut" x1="148" y1="504" x2="148" y2="510" stroke-width="1"/>
+    <text class="svgt f-mut" x="148" y="523" text-anchor="middle">3</text>
+    <rect class="f-acc" x="148" y="468" width="78" height="34" rx="3"/>
+    <text class="svgm f-bg" x="187.0" y="491" text-anchor="middle">C</text>
+    <line class="s-mut" x1="226" y1="504" x2="226" y2="510" stroke-width="1"/>
+    <text class="svgt f-mut" x="226" y="523" text-anchor="middle">6</text>
+    <rect class="f-acc" x="226" y="468" width="104" height="34" rx="3"/>
+    <text class="svgm f-bg" x="278.0" y="491" text-anchor="middle">D</text>
+    <line class="s-mut" x1="330" y1="504" x2="330" y2="510" stroke-width="1"/>
+    <text class="svgt f-mut" x="330" y="523" text-anchor="middle">10</text>
+    <text class="svgm f-mut" x="62" y="523" text-anchor="end">C</text>
+    <text class="svgt f-ink" x="372" y="491">4·1 + 4·3 + 3·6 + 2·10 = 54</text>
+    <text class="svgt f-mut" x="372" y="456">position 3 differs: exchange D ↔ C</text>
+    <text class="svgt f-mut" x="340" y="546" text-anchor="middle">the cost never rose, so G is at least as good as O:</text>
+    <text class="svgt f-mut" x="340" y="566" text-anchor="middle">if O was optimal, so is G</text>
+  </svg>
+  <figcaption>The textbook exchange argument on weighted completion time, the problem the pairwise interchange argument was first written for (Smith, 1956). Starting from O, find the first position where it differs from G and exchange O’s job there for G’s. The highlighted prefix that agrees with G grows by one each time, and the cost falls 99 → 72 → 60 → 54.</figcaption>
+</figure>
+  <p>However, note that I've used the term <em>gradually</em>. This is a multistep process and is time consuming. If the problem is not a textbook case you've seen before, trying to 1. come up with the greedy strategy in the first place, then 2. justifying it through this exchange argument is very time consuming and non-trivial.</p>
+  <p>Thus, I came up with a thought experiment. What if, instead of building Gs and Os, we just assume the prefix (T) of the solution is correct, then at the ith and jth item (where i, j > T) we swap them according to two different strategies.</p>
+  <p>Then the intuition becomes, if one strategy <strong>always</strong> cancels out the other, or one strategy <strong>always</strong> dominates, we've found the greedy key, without going through the multi-step exchange argument.</p>
+  <p>All we need to do now, is to prove that this <strong>Fixed prefix</strong> + <strong>Two-item swap</strong> is mathematically sound and verifies the correct strategy.</p>
+  <figure>
+  <svg viewBox="0 0 680 232" role="img" aria-label="Left: the textbook exchange argument turns O into G in several steps, each needing its own argument. Right: fix the prefix T and compare i j against j i once.">
+    <rect class="f-soft" x="0" y="0" width="680" height="232" rx="4"/>
+    <line class="s-rule" x1="340" y1="18" x2="340" y2="214" stroke-width="1"/>
+    <text class="svgt f-mut" x="170" y="30" text-anchor="middle">textbook exchange argument</text>
+    <text class="svgt f-mut" x="510" y="30" text-anchor="middle">fixed prefix + two-item swap</text>
+    <circle class="f-surf" cx="50" cy="100" r="20"/>
+    <text class="svgm f-ink" x="50" y="106" text-anchor="middle">O</text>
+    <circle class="f-surf" cx="130" cy="100" r="20"/>
+    <text class="svgm f-ink" x="130" y="106" text-anchor="middle">O′</text>
+    <circle class="f-surf" cx="210" cy="100" r="20"/>
+    <text class="svgm f-ink" x="210" y="106" text-anchor="middle">O″</text>
+    <circle class="f-acc" cx="290" cy="100" r="20"/>
+    <text class="svgm f-bg" x="290" y="106" text-anchor="middle">G</text>
+    <line class="s-mut" x1="73" y1="100" x2="100.0" y2="100.0" stroke-width="1.5"/>
+    <path class="f-mut" d="M107.0 100.0 L100.0 96.2 L100.0 103.8 Z"/>
+    <text class="svgt f-mut" x="90.0" y="86" text-anchor="middle">?</text>
+    <line class="s-mut" x1="153" y1="100" x2="180.0" y2="100.0" stroke-width="1.5"/>
+    <path class="f-mut" d="M187.0 100.0 L180.0 96.2 L180.0 103.8 Z"/>
+    <text class="svgt f-mut" x="170.0" y="86" text-anchor="middle">?</text>
+    <line class="s-mut" x1="233" y1="100" x2="260.0" y2="100.0" stroke-width="1.5"/>
+    <path class="f-mut" d="M267.0 100.0 L260.0 96.2 L260.0 103.8 Z"/>
+    <text class="svgt f-mut" x="250.0" y="86" text-anchor="middle">?</text>
+    <text class="svgt f-mut" x="170" y="160" text-anchor="middle">each step needs its own argument,</text>
+    <text class="svgt f-mut" x="170" y="180" text-anchor="middle">and a new problem needs new steps</text>
+    <rect class="f-surf" x="370" y="66" width="90" height="34" rx="3"/>
+    <text class="svgm f-ink" x="415" y="88" text-anchor="middle">T</text>
+    <rect class="f-acc" x="460" y="66" width="60" height="34" rx="3"/>
+    <text class="svgm f-bg" x="490" y="89" text-anchor="middle">i</text>
+    <rect class="f-mut" x="520" y="66" width="60" height="34" rx="3"/>
+    <text class="svgm f-bg" x="550" y="89" text-anchor="middle">j</text>
+    <rect class="f-surf" x="370" y="130" width="90" height="34" rx="3"/>
+    <text class="svgm f-ink" x="415" y="152" text-anchor="middle">T</text>
+    <rect class="f-mut" x="460" y="130" width="60" height="34" rx="3"/>
+    <text class="svgm f-bg" x="490" y="153" text-anchor="middle">j</text>
+    <rect class="f-acc" x="520" y="130" width="60" height="34" rx="3"/>
+    <text class="svgm f-bg" x="550" y="153" text-anchor="middle">i</text>
+    <text class="svgt f-mut" x="520" y="121" text-anchor="middle">swap</text>
+    <text class="svgt f-mut" x="510" y="190" text-anchor="middle">one inequality, checked once,</text>
+    <text class="svgt f-mut" x="510" y="210" text-anchor="middle">the same at every position</text>
+  </svg>
+  <figcaption>The textbook route builds a fresh chain of exchanges for every problem. Fixing the prefix shrinks the whole argument to one comparison of two neighbours.</figcaption>
+</figure>
+  <p>Thus, we split all exploration (permuatation) greedy problems into two sub-types. 1. Sum-based greedy and 2. Bottleneck-greedy.</p>
+  <p>You might wonder, can all exploration greedy problems fall into these two types? That is a valid push-back, but think about the original objective.</p>
+  <p>When can greedy algorithms be used? - 1. The objective must be a linear-optimization problem. 2. The problem's constraints have a very specific constraint, such that an ordering created greedily always outputs the optimal solution.</p>
+  <p>Particularly, focus on point 1. The objective must be linear. Thus an example where we have two arrays as inputs; a[], b[], and the objective is MAX(a) x MAX(b) can't be reliably solved by the greedy archetypes (1-3) we've built, but needs a fourth type, where the solution is defining a strict inequality every solution must satisfy and constructing, <em>programatically</em>, a solution that matches the lower/upper bound of this inequality gives the correct solution. This is a side note, but if this solution cannot accurately match this lower/upper bound, then it's not a greedy problem at all, and you have to revert to dynamic programming to solve this np-hard case.</p>
+  <p>Now that was a long way to justify that exploration greedy can only be 1. Sum-based, or 2. Bottleneck-based.</p>
+  <p>Intuitively, since a linear objective is just a weighted aggregate or dominated by some bottleneck in the array, we can say the above two options are sufficient.</p>
+  <p>For each case, let's observe the mathematical significance, and draw the conclusion of how we reach separability and block invariance.</p>
+  <h2>The Sum Case</h2>
+  <p>In a sum-based problem, every item adds its own cost to the total, and you want the total to be as small (or as large) as possible. Total waiting time, total penalty, that kind of thing.</p>
+  <p>Let's use a concrete one. You have jobs on a single machine. Job <span class="m">k</span> takes <span class="m">p<sub>k</sub></span> time and has a weight <span class="m">w<sub>k</sub></span>. If it finishes at time <span class="m">C<sub>k</sub></span>, it costs you <span class="m">w<sub>k</sub> C<sub>k</sub></span>. You want to minimize <span class="m"><span class="up">∑</span><sub>k</sub> w<sub>k</sub> C<sub>k</sub></span>.</p>
+  <p><strong>Fix the prefix.</strong> Assume the first part of the schedule is already decided, and it's correct. The only thing we need to know about it is the time it ends at. Call that <span class="m">T</span>. That's our scalar sufficient statistic.</p>
+  <p><strong>Swap two items.</strong> The next two jobs are <span class="m">i</span> and <span class="m">j</span>. Write out the cost of the pair in both orders.</p>
+  <p><span class="m">i</span> first:</p>
+  <div class="eq">w<sub>i</sub>(T + p<sub>i</sub>) + w<sub>j</sub>(T + p<sub>i</sub> + p<sub>j</sub>)</div>
+  <p><span class="m">j</span> first:</p>
+  <div class="eq">w<sub>j</sub>(T + p<sub>j</sub>) + w<sub>i</sub>(T + p<sub>j</sub> + p<sub>i</sub>)</div>
+  <p>Expand both and subtract. <span class="m">w<sub>i</sub> T</span>, <span class="m">w<sub>j</sub> T</span>, <span class="m">w<sub>i</sub> p<sub>i</sub></span> and <span class="m">w<sub>j</sub> p<sub>j</sub></span> show up on both sides, so they all cancel, and you're left with</p>
+  <div class="eq">Δ = cost(i, j  ∣  T) − cost(j, i  ∣  T) = w<sub>j</sub> p<sub>i</sub> − w<sub>i</sub> p<sub>j</sub></div>
+  <figure>
+  <svg viewBox="0 0 680 286" role="img" aria-label="Smith’s rule. In i first, j waits p_i and pays w_j times p_i. In j first, i waits p_j and pays w_i times p_j. Everything else is paid in both orders.">
+    <rect class="f-soft" x="0" y="0" width="680" height="286" rx="4"/>
+    <text class="svgt f-mut" x="560" y="36" text-anchor="middle">cost from T = 0</text>
+    <text class="svgt f-mut" x="20" y="70">i first</text>
+    <rect class="f-acc" x="110" y="50" width="80" height="30" rx="3"/>
+    <text class="svgm f-bg" x="150.0" y="71" text-anchor="middle">i</text>
+    <rect class="f-mut" x="190" y="50" width="120" height="30" rx="3"/>
+    <text class="svgm f-bg" x="250.0" y="71" text-anchor="middle">j</text>
+    <rect class="f-mark" x="110" y="84" width="80" height="14" rx="2"><title>j waits 2 time units at weight 1: extra cost 2</title></rect>
+    <text class="svgt f-ink" x="200" y="96.0">j waits for i: w<tspan dy="4" font-size="9.75">j</tspan><tspan dy="-4">·p</tspan><tspan dy="4" font-size="9.75">i</tspan><tspan dy="-4"> = 1·2 = 2</tspan></text>
+    <text class="svgt f-mut" x="20" y="160">j first</text>
+    <rect class="f-mut" x="110" y="140" width="120" height="30" rx="3"/>
+    <text class="svgm f-bg" x="170.0" y="161" text-anchor="middle">j</text>
+    <rect class="f-acc" x="230" y="140" width="80" height="30" rx="3"/>
+    <text class="svgm f-bg" x="270.0" y="161" text-anchor="middle">i</text>
+    <rect class="f-mark" x="110" y="174" width="120" height="42" rx="2"><title>i waits 3 time units at weight 3: extra cost 9</title></rect>
+    <text class="svgt f-ink" x="240" y="200.0">i waits for j: w<tspan dy="4" font-size="9.75">i</tspan><tspan dy="-4">·p</tspan><tspan dy="4" font-size="9.75">j</tspan><tspan dy="-4"> = 3·3 = 9</tspan></text>
+    <text class="svgt f-ink" x="560" y="70" text-anchor="middle" font-weight="600">11</text>
+    <text class="svgt f-ink" x="560" y="160" text-anchor="middle" font-weight="600">18</text>
+    <line class="s-rule" x1="110" y1="44" x2="110" y2="222" stroke-width="1"/>
+    <text class="svgm f-mut" x="110" y="236" text-anchor="middle">T</text>
+    <text class="svgt f-mut" x="340" y="258" text-anchor="middle">shared by both orders, so it cancels: every T term, and w<tspan dy="4" font-size="9.75">i</tspan><tspan dy="-4"> p</tspan><tspan dy="4" font-size="9.75">i</tspan><tspan dy="-4"> + w</tspan><tspan dy="4" font-size="9.75">j</tspan><tspan dy="-4"> p</tspan><tspan dy="4" font-size="9.75">j</tspan></text>
+    <text class="svgt f-ink" x="340" y="278" text-anchor="middle">Δ = w<tspan dy="4" font-size="9.75">j</tspan><tspan dy="-4"> p</tspan><tspan dy="4" font-size="9.75">i</tspan><tspan dy="-4"> − w</tspan><tspan dy="4" font-size="9.75">i</tspan><tspan dy="-4"> p</tspan><tspan dy="4" font-size="9.75">j</tspan><tspan dy="-4"> = 2 − 9 = −7, so i goes first</tspan></text>
+  </svg>
+  <figcaption>Where Δ comes from. With p<sub>i</sub> = 2, w<sub>i</sub> = 3, p<sub>j</sub> = 3, w<sub>j</sub> = 1, the only cost that differs between the orders is the shaded one: whoever goes second pays its weight for the time it spent waiting. The ratio w/p says i first, and 11 against 18 agrees.</figcaption>
+</figure>
+  <p><span class="m">i</span> should go first when <span class="m">Δ ≤ 0</span>, which rearranges to</p>
+  <div class="eq"><span class="frac"><span>w<sub>i</sub></span><span>p<sub>i</sub></span></span> ≥ <span class="frac"><span>w<sub>j</sub></span><span>p<sub>j</sub></span></span></div>
+  <p>Now look at what just happened, because both properties come straight out of this.</p>
+  <p><strong>Separability.</strong> <span class="m">T</span> disappeared from <span class="m">Δ</span>. Whatever the prefix was, the choice between <span class="m">i</span> and <span class="m">j</span> only depends on the <span class="m">w</span> and <span class="m">p</span> of those two jobs. So the key is a function of the item alone, <span class="m">key(k) = w<sub>k</sub> / p<sub>k</sub></span>. That's separability, and it's also the reason we're allowed to sort before building anything.</p>
+  <p><strong>Block invariance.</strong> Both orders finish the pair at the same time, <span class="m">T + p<sub>i</sub> + p<sub>j</sub></span>. So every job after the pair starts at exactly the same moment either way, and its cost doesn't change. The freedom handed to the rest of the schedule is equal, and the only thing that differs between the two orders is <span class="m">Δ</span>.</p>
+  <p>This isn't a coincidence of this one problem. Say an item that starts at time <span class="m">T</span> costs <span class="m">a<sub>k</sub> T + b<sub>k</sub></span> (the cost grows linearly with how late it starts) and pushes time forward by <span class="m">p<sub>k</sub></span>. Do the same subtraction and you get</p>
+  <div class="eq">Δ = a<sub>j</sub> p<sub>i</sub> − a<sub>i</sub> p<sub>j</sub></div>
+  <p><span class="m">T</span> cancels every time, so the key is always <span class="m">a<sub>k</sub> / p<sub>k</sub></span>.</p>
+  <p><strong>Why this is enough.</strong> This is where the swap becomes the exchange argument. The prefix we fixed was arbitrary, so the comparison holds at every position in the schedule. Take any schedule that isn't sorted by <span class="m">w/p</span>. Somewhere in it, two neighbours are in the wrong order. Swap them. By block invariance nothing outside the pair changes, and by the sign of <span class="m">Δ</span> the pair doesn't get worse. Keep doing this until no neighbours are out of order, and you've arrived at the sorted schedule without the cost ever going up. So the sorted schedule is at least as good as whatever you started from, including an optimal one.</p>
+  <p>That's the <em>gradual</em> exchange from the textbook, but you never have to prove anything new along the way. Every step is the same two-item swap you already checked.</p>
+  <p>So the strategy holds: sort by <span class="m">w<sub>k</sub> / p<sub>k</sub></span> descending, then build the schedule in that order.</p>
+  <h2>The Bottleneck Case</h2>
+  <p>In a bottleneck problem, a single item decides the answer. You're minimizing the worst lateness, the latest finish, the heaviest load. All the other items can be doing great and the answer won't move.</p>
+  <p>Same machine, different objective. Job <span class="m">k</span> takes <span class="m">p<sub>k</sub></span> time and is due at <span class="m">d<sub>k</sub></span>. If it finishes at <span class="m">C<sub>k</sub></span>, its lateness is <span class="m">C<sub>k</sub> − d<sub>k</sub></span>. You want to minimize the largest lateness, <span class="m"><span class="up">max</span><sub>k</sub> (C<sub>k</sub> − d<sub>k</sub>)</span>.</p>
+  <p><strong>Fix the prefix.</strong> Same as before. The schedule up to time <span class="m">T</span> is decided and correct.</p>
+  <p><strong>Swap two items.</strong> The next two jobs are <span class="m">i</span> and <span class="m">j</span>. Whichever one goes second finishes at the same time in both orders:</p>
+  <div class="eq">M = T + p<sub>i</sub> + p<sub>j</sub></div>
+  <p><span class="m">i</span> first, the worst lateness of the pair is</p>
+  <div class="eq"><span class="up">max</span>(T + p<sub>i</sub> − d<sub>i</sub>, M − d<sub>j</sub>)</div>
+  <p><span class="m">j</span> first:</p>
+  <div class="eq"><span class="up">max</span>(T + p<sub>j</sub> − d<sub>j</sub>, M − d<sub>i</sub>)</div>
+  <p>This is where it differs from the sum case. You can't subtract two maxes and expect things to cancel. So instead of looking for cancellation, we look for domination: show that every term on one side is at most some term on the other side.</p>
+  <p>Say <span class="m">d<sub>i</sub> ≤ d<sub>j</sub></span> (WLOG). Check both terms of the <span class="m">i</span>-first order against <span class="m">M − d<sub>i</sub></span>, which is one of the terms of the <span class="m">j</span>-first order.</p>
+  <ul><li><span class="m">T + p<sub>i</sub> − d<sub>i</sub> ≤ M − d<sub>i</sub></span>, because <span class="m">M = T + p<sub>i</sub> + p<sub>j</sub></span> and <span class="m">p<sub>j</sub> ≥ 0</span>.</li><li><span class="m">M − d<sub>j</sub> ≤ M − d<sub>i</sub></span>, because <span class="m">d<sub>j</sub> ≥ d<sub>i</sub></span>.</li></ul>
+  <p>Both are at most <span class="m">M − d<sub>i</sub></span>, so</p>
+  <div class="eq">cost(i, j  ∣  T) ≤ M − d<sub>i</sub> ≤ cost(j, i  ∣  T)</div>
+  <p>The job due earlier goes first.</p>
+  <p>A quick check with numbers: <span class="m">T = 5</span>, job A takes 3 and is due at 10, job B takes 2 and is due at 6. A first, B finishes at 10 and is 4 late. B first, B is 1 late and A is right on time. Earlier due date wins, 1 against 4.</p>
+  <figure>
+  <svg viewBox="0 0 680 270" role="img" aria-label="Earliest due date. T equals 5. A takes 3 and is due at 10; B takes 2 and is due at 6. A first leaves B 4 late; B first leaves B 1 late and A on time.">
+    <rect class="f-soft" x="0" y="0" width="680" height="270" rx="4"/>
+    <line class="s-mut" x1="200" y1="40" x2="200" y2="226" stroke-width="1"/>
+    <text class="svgt f-mut" x="200" y="30" text-anchor="middle">d<tspan dy="4" font-size="9.75">B</tspan><tspan dy="-4"> = 6</tspan></text>
+    <line class="s-mut" x1="480" y1="40" x2="480" y2="226" stroke-width="1"/>
+    <text class="svgt f-mut" x="480" y="30" text-anchor="middle">d<tspan dy="4" font-size="9.75">A</tspan><tspan dy="-4"> = 10</tspan></text>
+    <text class="svgt f-mut" x="600" y="46" text-anchor="middle">worst</text>
+    <text class="svgt f-mut" x="20" y="82">A first</text>
+    <rect class="f-surf" x="60" y="62" width="70" height="30" rx="3"/>
+    <text class="svgt f-ink" x="95" y="82" text-anchor="middle">T = 5</text>
+    <rect class="f-acc" x="130" y="62" width="210" height="30" rx="3"/>
+    <text class="svgm f-bg" x="235" y="83" text-anchor="middle">A</text>
+    <rect class="f-mut" x="340" y="62" width="140" height="30" rx="3"/>
+    <text class="svgm f-bg" x="410" y="83" text-anchor="middle">B</text>
+    <line class="s-acc" x1="200" y1="104" x2="480" y2="104" stroke-width="2"/>
+    <line class="s-acc" x1="200" y1="99" x2="200" y2="109" stroke-width="2"/>
+    <line class="s-acc" x1="480" y1="99" x2="480" y2="109" stroke-width="2"/>
+    <text class="svgt f-ink" x="340.0" y="124" text-anchor="middle">B finishes at 10, due 6: late 4</text>
+    <text class="svgt f-ink" x="600" y="82" text-anchor="middle" font-weight="600">4</text>
+    <text class="svgt f-mut" x="20" y="172">B first</text>
+    <rect class="f-surf" x="60" y="152" width="70" height="30" rx="3"/>
+    <text class="svgt f-ink" x="95" y="172" text-anchor="middle">T = 5</text>
+    <rect class="f-mut" x="130" y="152" width="140" height="30" rx="3"/>
+    <text class="svgm f-bg" x="200" y="173" text-anchor="middle">B</text>
+    <rect class="f-acc" x="270" y="152" width="210" height="30" rx="3"/>
+    <text class="svgm f-bg" x="375" y="173" text-anchor="middle">A</text>
+    <line class="s-acc" x1="200" y1="194" x2="270" y2="194" stroke-width="2"/>
+    <line class="s-acc" x1="200" y1="189" x2="200" y2="199" stroke-width="2"/>
+    <line class="s-acc" x1="270" y1="189" x2="270" y2="199" stroke-width="2"/>
+    <text class="svgt f-ink" x="280" y="199">B late 1, A on time</text>
+    <text class="svgt f-ink" x="600" y="172" text-anchor="middle" font-weight="600">1 ✓</text>
+    <line class="s-rule" x1="130" y1="238" x2="550" y2="238" stroke-width="1"/>
+    <line class="s-rule" x1="130" y1="234" x2="130" y2="242" stroke-width="1"/>
+    <text class="svgt f-mut" x="130" y="258" text-anchor="middle">5</text>
+    <line class="s-rule" x1="200" y1="234" x2="200" y2="242" stroke-width="1"/>
+    <text class="svgt f-mut" x="200" y="258" text-anchor="middle">6</text>
+    <line class="s-rule" x1="270" y1="234" x2="270" y2="242" stroke-width="1"/>
+    <text class="svgt f-mut" x="270" y="258" text-anchor="middle">7</text>
+    <line class="s-rule" x1="340" y1="234" x2="340" y2="242" stroke-width="1"/>
+    <text class="svgt f-mut" x="340" y="258" text-anchor="middle">8</text>
+    <line class="s-rule" x1="410" y1="234" x2="410" y2="242" stroke-width="1"/>
+    <text class="svgt f-mut" x="410" y="258" text-anchor="middle">9</text>
+    <line class="s-rule" x1="480" y1="234" x2="480" y2="242" stroke-width="1"/>
+    <text class="svgt f-mut" x="480" y="258" text-anchor="middle">10</text>
+    <line class="s-rule" x1="550" y1="234" x2="550" y2="242" stroke-width="1"/>
+    <text class="svgt f-mut" x="550" y="258" text-anchor="middle">11</text>
+  </svg>
+  <figcaption>The worked example, drawn. Swapping the pair moves B from 4 late to 1 late without making A late at all, which is the domination argument with numbers in it.</figcaption>
+</figure>
+  <p><strong>Separability.</strong> This time <span class="m">T</span> didn't cancel. It's sitting inside <span class="m">M</span>. But <span class="m">M</span> is the same number in both orders, and the comparison came down to <span class="m">d<sub>i</sub> ≤ d<sub>j</sub></span> and nothing else. The prefix never changes which order wins. So the key is again a function of the item alone, <span class="m">key(k) = d<sub>k</sub></span>.</p>
+  <p><strong>Block invariance.</strong> The pair ends at <span class="m">M</span> either way, so every job after it starts at the same time and has the same lateness. Call the worst lateness of everything outside the pair <span class="m">C</span>. It's the same number in both orders. The final answer is <span class="m"><span class="up">max</span>(C, <span class="up">worst of the pair</span>)</span>, and since</p>
+  <div class="eq">a ≤ b  ⟹  <span class="up">max</span>(C, a) ≤ <span class="up">max</span>(C, b)</div>
+  <p>winning the pair means winning the whole schedule. That's why checking two items is enough, even though the objective looks at every item.</p>
+  <p><strong>Why this is enough.</strong> Same argument as the sum case. The prefix was arbitrary, so in any schedule that isn't sorted by due date there's a pair of neighbours in the wrong order. Swapping it never makes the answer worse, and repeating ends at the sorted schedule.</p>
+  <p>So the strategy holds here too: sort by <span class="m">d<sub>k</sub></span> ascending, then build the schedule in that order.</p>
+  <h2>What these two cases tell us</h2>
+  <p>In both cases, we fixed a prefix, swapped two neighbours, and found the same two things.</p>
+  <p>First, which order wins doesn't depend on <span class="m">T</span> at all. In the sum case <span class="m">T</span> cancelled out. In the bottleneck case it didn't cancel, but it ended up on both sides of the comparison and never changed the result. Either way, the choice came down to comparing one number per item: <span class="m">w/p</span> in the first case, <span class="m">d</span> in the second. That's separability, and that number is our greedy key.</p>
+  <p>Second, swapping the pair only changes the pair. Both orders finish at the same time, so everything after them starts from the same point and costs the same. That's block invariance, and it's why looking at two items is enough to judge the whole schedule.</p>
+  <p>Put those together and you get the strategy. Take any order that isn't sorted by the key. Somewhere, two neighbours are in the wrong order. Swap them, and by the two properties, nothing gets worse. Keep going until nothing is out of order, and you're at the sorted order. So sorting by the key and building in that order is optimal.</p>
+  <figure>
+  <svg viewBox="0 0 680 262" role="img" aria-label="Line chart: total weighted completion time for each order as out-of-order neighbours are swapped one pair at a time, falling from 105 to 54 and never rising.">
+    <rect class="f-soft" x="0" y="0" width="680" height="262" rx="4"/>
+    <text class="svgt f-mut" x="20" y="28">total cost Σ w<tspan dy="4" font-size="9.75">k</tspan><tspan dy="-4"> C</tspan><tspan dy="4" font-size="9.75">k</tspan></text>
+    <line class="s-rule" x1="60" y1="175.0" x2="650" y2="175.0" stroke-width="1"/>
+    <text class="svgt f-mut" x="52" y="179.0" text-anchor="end">60</text>
+    <line class="s-rule" x1="60" y1="125.0" x2="650" y2="125.0" stroke-width="1"/>
+    <text class="svgt f-mut" x="52" y="129.0" text-anchor="end">80</text>
+    <line class="s-rule" x1="60" y1="75.0" x2="650" y2="75.0" stroke-width="1"/>
+    <text class="svgt f-mut" x="52" y="79.0" text-anchor="end">100</text>
+    <polyline class="s-acc" points="90,62.5 180,77.5 270,107.5 360,142.5 450,157.5 540,180 630,190" fill="none" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+    <circle class="f-acc s-soft" cx="90" cy="62.5" r="5" stroke-width="2"/>
+    <circle cx="90" cy="62.5" r="13" fill="transparent"><title>DCBA: total 105 (start)</title></circle>
+    <text class="svgt f-ink" x="90" y="226" text-anchor="middle">DCBA</text>
+    <circle class="f-acc s-soft" cx="180" cy="77.5" r="5" stroke-width="2"/>
+    <circle cx="180" cy="77.5" r="13" fill="transparent"><title>CDBA: total 99 (after swapping D↔C)</title></circle>
+    <text class="svgt f-ink" x="180" y="226" text-anchor="middle">CDBA</text>
+    <text class="svgt f-mut" x="135.0" y="248" text-anchor="middle">D↔C</text>
+    <circle class="f-acc s-soft" cx="270" cy="107.5" r="5" stroke-width="2"/>
+    <circle cx="270" cy="107.5" r="13" fill="transparent"><title>CBDA: total 87 (after swapping D↔B)</title></circle>
+    <text class="svgt f-ink" x="270" y="226" text-anchor="middle">CBDA</text>
+    <text class="svgt f-mut" x="225.0" y="248" text-anchor="middle">D↔B</text>
+    <circle class="f-acc s-soft" cx="360" cy="142.5" r="5" stroke-width="2"/>
+    <circle cx="360" cy="142.5" r="13" fill="transparent"><title>CBAD: total 73 (after swapping D↔A)</title></circle>
+    <text class="svgt f-ink" x="360" y="226" text-anchor="middle">CBAD</text>
+    <text class="svgt f-mut" x="315.0" y="248" text-anchor="middle">D↔A</text>
+    <circle class="f-acc s-soft" cx="450" cy="157.5" r="5" stroke-width="2"/>
+    <circle cx="450" cy="157.5" r="13" fill="transparent"><title>BCAD: total 67 (after swapping C↔B)</title></circle>
+    <text class="svgt f-ink" x="450" y="226" text-anchor="middle">BCAD</text>
+    <text class="svgt f-mut" x="405.0" y="248" text-anchor="middle">C↔B</text>
+    <circle class="f-acc s-soft" cx="540" cy="180" r="5" stroke-width="2"/>
+    <circle cx="540" cy="180" r="13" fill="transparent"><title>BACD: total 58 (after swapping C↔A)</title></circle>
+    <text class="svgt f-ink" x="540" y="226" text-anchor="middle">BACD</text>
+    <text class="svgt f-mut" x="495.0" y="248" text-anchor="middle">C↔A</text>
+    <circle class="f-acc s-soft" cx="630" cy="190" r="5" stroke-width="2"/>
+    <circle cx="630" cy="190" r="13" fill="transparent"><title>ABCD: total 54 (after swapping B↔A)</title></circle>
+    <text class="svgt f-ink" x="630" y="226" text-anchor="middle">ABCD</text>
+    <text class="svgt f-mut" x="585.0" y="248" text-anchor="middle">B↔A</text>
+    <text class="svgt f-ink" x="102" y="66.5" font-weight="600">105</text>
+    <text class="svgt f-ink" x="630" y="178.0" text-anchor="middle" font-weight="600">54</text>
+  </svg>
+  <figcaption>The argument run on real numbers. Jobs A–D with (p, w) = (1, 4), (2, 4), (3, 3), (4, 2) have keys w/p = 4, 2, 1, 0.5, and start in the worst order. Each step swaps one pair of neighbours the key says is out of order. The total never rises, and the walk ends at the sorted order.</figcaption>
+</figure>
+  <p>That's the exchange argument, but with every step being the same two-item swap you already checked. Instead of building a new exchange argument for every problem, you prove one inequality about two neighbours, and the rest follows.</p>
+  <p>In competitive programming, you need to balance the tradeoff between time and verification. Our approach provides a robust alternative to the arbitrary exchange argument provided in almost all textbooks, and also a practical strategy to extract a greedy key quickly and verify that to some degree of confidence by only using a small number of examples.</p>
+  <h2>Conclusion</h2>
+  <p>That's it.</p>
+  <p>For exploration greedy problems (permutation greedy), do the following:</p>
+  <ol><li>Extract greedy key as a pure function of k; key = f(k)</li><li>Sort by this greedy key</li><li>Build the solution by iterating through the sorted array in 2. and applying the feasibility check against a scalar sufficient statistic T.</li><li>OPTIONAL. If needed, verify the strategy by applying the two-item swap for separability and block-invariance. If you do this step iteratively, it gives you the same proof as the exchange argument.</li></ol>
+  <figure>
+  <svg viewBox="0 0 680 196" role="img" aria-label="Four steps: key equals f of k, sort by the key, build while checking scalar T, and optionally verify with a two-item swap, which repeated is the exchange argument.">
+    <rect class="f-soft" x="0" y="0" width="680" height="196" rx="4"/>
+    <rect class="f-acc" x="16" y="40" width="140" height="64" rx="3"/>
+    <text class="svgt f-bg" x="86.0" y="66" text-anchor="middle" font-weight="600">1 · key = f(k)</text>
+    <text class="svgt f-bg" x="86.0" y="86" text-anchor="middle">reads item k only</text>
+    <rect class="f-surf" x="174" y="40" width="118" height="64" rx="3"/>
+    <text class="svgt f-ink" x="233.0" y="66" text-anchor="middle" font-weight="600">2 · sort</text>
+    <text class="svgt f-mut" x="233.0" y="86" text-anchor="middle">by the key</text>
+    <rect class="f-surf" x="310" y="40" width="170" height="64" rx="3"/>
+    <text class="svgt f-ink" x="395.0" y="66" text-anchor="middle" font-weight="600">3 · build</text>
+    <text class="svgt f-mut" x="395.0" y="86" text-anchor="middle">checking scalar T</text>
+    <rect class="f-soft s-mut" x="498" y="40" width="164" height="64" rx="3" fill="none" stroke-width="1.5" stroke-dasharray="5 4"/>
+    <text class="svgt f-ink" x="580.0" y="66" text-anchor="middle" font-weight="600">4 · verify</text>
+    <text class="svgt f-mut" x="580.0" y="86" text-anchor="middle">swap two neighbours</text>
+    <line class="s-mut" x1="158" y1="72" x2="165.0" y2="72.0" stroke-width="1.5"/>
+    <path class="f-mut" d="M172.0 72.0 L165.0 68.2 L165.0 75.8 Z"/>
+    <line class="s-mut" x1="294" y1="72" x2="301.0" y2="72.0" stroke-width="1.5"/>
+    <path class="f-mut" d="M308.0 72.0 L301.0 68.2 L301.0 75.8 Z"/>
+    <line class="s-mut" x1="482" y1="72" x2="489.0" y2="72.0" stroke-width="1.5" stroke-dasharray="5 4"/>
+    <path class="f-mut" d="M496.0 72.0 L489.0 68.2 L489.0 75.8 Z"/>
+    <path class="s-mut" d="M556 106 C 556 146, 604 146, 604 112" fill="none" stroke-width="1.5"/>
+    <path class="f-mut" d="M604.0 106.0 L600.1 113.0 L607.9 113.0 Z"/>
+    <text class="svgt f-mut" x="580" y="166" text-anchor="middle">repeat it and you have</text>
+    <text class="svgt f-mut" x="580" y="184" text-anchor="middle">the exchange argument</text>
+    <text class="svgt f-mut" x="248" y="140" text-anchor="middle">1–3 are the algorithm; 4 is the proof, on demand</text>
+  </svg>
+  <figcaption>The recipe from the conclusion. The first three steps are what you run; the fourth is there when you want to be sure, and repeating it is exactly the textbook proof.</figcaption>
+</figure>
+  <p>What was above was an induction, a step-by-step derivation of how we got to this conclusion.</p>
+  <p>In the next post, we're going to talk about a specific type of problem.</p>
+  <p>Remember how I've mentioned that for exploration greedy, the T we check feasibility against should be a scalar?</p>
+  <p>Now, during implementation, there are going to be problems where that T should be implemented as a data structure rather than a scalar. In other words, it should hold more information than just the aggregate or the last visited state (Markov property).</p>
+  <p>For such cases, we're going to show that it's the second archetype of greedy problems we're to tackle in the series: the decision greedy (subset greedy).</p>
+  <p>Following that, we will properly look at how decision greedy problems can be solved in a structured way, just like this.</p>
+  <p>Keep an eye out for this series, since we're going to tackle all four greedy archetypes with this kind of structured approach, rather than relying on memorizing solutions.</p>
+  <h2>References</h2>
+  <ul><li>Smith, W. E. (1956). "Various optimizers for single-stage production." <em>Naval Research Logistics Quarterly</em>, 3(1–2), 59–66.</li><li>"Greedy algorithm." <em>Wikipedia</em>. <a href="https://en.wikipedia.org/wiki/Greedy_algorithm">https://en.wikipedia.org/wiki/Greedy_algorithm</a>. Accessed 26 September 2026.</li></ul>
+  <nav class="pn"><a href="#ch1"><small>Previous</small><span>The starting frustration</span></a><a class="next" href="#ch3"><small>Next</small><span>When the state needs a data structure</span></a></nav>
+</article>
+
+<!-- ============ CH3 ============ -->
+<article id="ch3" data-page data-part="Part 3 of 7" hidden>
+  <p class="kicker">Part 3 · A Structured Approach to All (Most) Greedy Problems</p>
+  <h1>If the sufficient statistic T needs a data structure, it's subset greedy, not an ordering</h1>
+  <p class="dek">"Built one piece at a time" and "building an order" sound the same. They aren't, and confusing them cost me the most time.</p>
+  <div class="byline"><span>~8 min read</span></div>
+  <figure>
+  <svg viewBox="0 0 680 210" role="img" aria-label="On the left a single number box labelled T; on the right a heap tree labelled T with a hidden second element highlighted">
+    <rect class="f-soft" x="0" y="0" width="680" height="210" rx="4"/>
+    <rect class="f-surf s-ink" stroke-width="2" x="90" y="70" width="120" height="60" rx="4"/>
+    <text class="svgm f-ink" x="150" y="108" text-anchor="middle" font-size="24">T = 10</text>
+    <text class="svgt f-ink" x="150" y="160" text-anchor="middle">a single number carries itself</text>
+    <g stroke-width="1.8" class="s-mut" fill="none"><path d="M480 55 L420 115 M480 55 L540 115 M420 115 L390 170"/></g>
+    <circle class="f-acc" cx="480" cy="55" r="20"/><text class="svgt f-bg" x="480" y="60" text-anchor="middle" font-weight="600">3</text>
+    <circle class="f-mark s-acc" stroke-width="2.5" cx="420" cy="115" r="20"/><text class="svgt f-ink" x="420" y="120" text-anchor="middle" font-weight="600">7</text>
+    <circle class="f-surf s-mut" stroke-width="1.5" cx="540" cy="115" r="20"/><text class="svgt f-ink" x="540" y="120" text-anchor="middle">9</text>
+    <circle class="f-surf s-mut" stroke-width="1.5" cx="390" cy="170" r="16"/><text class="svgt f-ink" x="390" y="175" text-anchor="middle">8</text>
+    <text class="svgt f-ink" x="600" y="60">min you read</text>
+    <text class="svgt f-ink" x="455" y="195" text-anchor="middle">the next min was hidden all along</text>
+  </svg>
+</figure>
+  <p>By this point I had a working test for ordering problems. The natural next worry was what to do when it failed. If no single sort key exists, is the answer immediately "use DP"? Several classic algorithms seemed to sit in between: they don't sort once, but they keep picking the best available thing from a priority queue, recomputing as they go.</p>
+  <div class="q"><span class="lab">The question</span><p>If no static key exists for an ordering problem, can I fall back to an "adaptive" greedy with a priority queue, like the ones that repeatedly merge the two smallest items, before concluding it's DP?</p></div>
+  <p>My first answer was yes, with a three-step ladder: static key, then adaptive key, then DP. To test it, I tried something concrete: write the separability and block-invariance proof for Prim's algorithm (grow a minimum spanning tree by repeatedly adding the cheapest edge leaving the tree so far), since it had been filed under "adaptive."</p>
+  <p>Trying to do that broke the classification in two separate ways:</p>
+  <ul><li><strong>No single number summarizes the past.</strong> The obvious candidate is "how many vertices are in the tree." But two trees of the same size can cover completely different vertices, with completely different cheap edges leaving them. What matters is <em>which</em> vertices, not how many.</li><li><strong>The build order isn't freely rearrangeable.</strong> Take a triangle with edges A–B (weight 1), B–C (weight 2) and A–C (weight 10), starting from A. Prim's adds A–B, then B–C. But "swap them" isn't even a legal move: B–C can't be added first, because neither end is in the tree yet. Scheduling never had this problem; any two jobs can run in either order.</li></ul>
+  <p>Both failures come from one fact. The answer to a spanning-tree problem is the <em>set</em> of edges chosen. The order they were added in has no effect on the total. The ordering machinery was built for objectives where position matters, so it has nothing to grip here. Prim's is a subset problem that happens to be built one piece at a time, and it belongs with the subset methods in part 4. The same turned out to be true for merging-the-two-smallest style algorithms.</p>
+  <blockquote>The defining property of an ordering problem isn't that you build it step by step. It's that position in the sequence changes the cost.</blockquote>
+  <h2>When T turns out to be a heap</h2>
+  <p>This came up again with a scheduling problem: each unit-time task has a deadline and a reward, and you want the most reward from tasks finished on time. One efficient solution sorts by deadline and keeps the chosen tasks in a min-heap, throwing out the smallest reward whenever there are more tasks than time slots. It looked like an ordering problem with a very compact <span class="m">T</span>: the heap's size and its smallest element.</p>
+  <div class="q"><span class="lab">The question</span><p>Doesn't this mean T doesn't have to be a single number after all? The heap exposes one number, its minimum, at each step, so maybe it still counts.</p></div>
+  <p>We checked it directly. Put 3, 7 and 9 in a heap. The minimum is 3 and the size is 3. Push 8, then remove the smallest: the 3 goes, and the new minimum is 7. Nothing in "minimum 3, size 3" could have told you that. The 7 was sitting inside the heap the whole time, invisible to the summary.</p>
+  <p>That separates two questions that are easy to blur:</p>
+  <ul><li><strong>Does the decision at this step read only a small summary?</strong> Yes: compare against the heap's minimum.</li><li><strong>Can that summary work out its own next value from itself plus the new item?</strong> No. It needs the whole multiset underneath it.</li></ul>
+  <p>My first instinct was to make the second question a permanent third check for ordering problems. That turned out to be the wrong move: it made the framework bigger for a problem that wasn't an ordering problem in the first place. The better fix was simpler. For genuine ordering problems, keep separability and block invariance. When <span class="m">T</span> turns out to need a full data structure just to know its own next value, treat that as a <em>signal</em>: you're probably looking at subset selection. The heap is doing the work of a feasibility check (part 4 explains which one), not tracking the state of a sequence.</p>
+  <div class="note"><span class="lab">Why this is a reliable signal</span><p>In a real ordering problem, <span class="m">T</span> has to be one number, and that isn't a coincidence. The swap proof works by reducing to a single inequality. A state with several independent dimensions would need several inequalities to agree on one order, which is exactly what fails in multi-constraint problems.</p></div>
+  <h2>"But the problem says I choose an order"</h2>
+  <div class="q"><span class="lab">The question</span><p>That deadline problem literally asks me to decide the order in which tasks are done. How can it not be an ordering problem?</p></div>
+  <p>Don't argue it; test it. Take the tasks one good solution uses and try every ordering of them. For the example we used, only 1 of the 24 orderings was even feasible, so order clearly matters for <em>whether</em> a schedule works. But every feasible ordering earned the same reward, 15. And one mechanical rule, sort the chosen tasks by deadline, always finds a feasible order whenever one exists.</p>
+  <p>So order isn't a trade-off you're optimizing. It's bookkeeping you do after the real decision, which is <em>which tasks to take</em>. That's a subset problem wearing a scheduling costume. Compare weighted completion time from part 2: there, different orderings of the same jobs give genuinely different totals, and the order is the thing being optimized.</p>
+  <div class="note"><span class="lab">Carried forward</span><p>Two diagnostics. If <span class="m">T</span> needs a data structure, suspect a subset problem. To confirm, fix one chosen subset and try different valid orders: if the objective never changes, order is bookkeeping and you're in subset territory.</p></div>
+  <nav class="pn"><a href="#ch2"><small>Previous</small><span>Exploration greedy: the two-item swap</span></a><a class="next" href="#ch4"><small>Next</small><span>Decision greedy: matroids and the Lagrangian</span></a></nav>
+</article>
+
+<!-- ============ CH4 ============ -->
+<article id="ch4" data-page data-part="Part 4 of 7" hidden>
+  <p class="kicker">Part 4 · A Structured Approach to All (Most) Greedy Problems</p>
+  <h1>Decision greedy: matroids and the Lagrangian</h1>
+  <p class="dek">Test the constraint before you look at the objective. Then, if you have to, put a price on the budget.</p>
+  <div class="byline"><span>~12 min read</span></div>
+  <figure>
+  <svg viewBox="0 0 680 220" role="img" aria-label="Items plotted by value-to-weight ratio with a horizontal price line; items above the line are included">
+    <line class="s-mut" x1="60" y1="190" x2="640" y2="190" stroke-width="1.5"/>
+    <line class="s-mut" x1="60" y1="20" x2="60" y2="190" stroke-width="1.5"/>
+    <text class="svgt f-mut" x="20" y="30">ratio</text>
+    <line class="s-acc" x1="60" y1="98" x2="640" y2="98" stroke-width="2.5" stroke-dasharray="8 5"/>
+    <text class="svgm f-acc" x="600" y="90">λ</text>
+    <rect class="f-acc" x="120" y="40" width="44" height="150"/><text class="svgt f-ink" x="142" y="210" text-anchor="middle">A · 6</text>
+    <rect class="f-acc" x="230" y="70" width="44" height="120"/><text class="svgt f-ink" x="252" y="210" text-anchor="middle">B · 5</text>
+    <rect class="f-mut" x="340" y="110" width="44" height="80"/><text class="svgt f-ink" x="362" y="210" text-anchor="middle">D · 4</text>
+    <rect class="f-mut" x="450" y="140" width="44" height="50"/><text class="svgt f-ink" x="472" y="210" text-anchor="middle">E · 2</text>
+    <text class="svgt f-ink" x="520" y="130">below the price:</text>
+    <text class="svgt f-ink" x="520" y="148">left out</text>
+  </svg>
+  <figcaption>Lower the price and items switch on in ratio order, whatever the final price turns out to be.</figcaption>
+</figure>
+  <p>With orderings handled, the other half of my original model was waiting: problems where the answer is a subset. I had heard two phrases for these, "check if it's a matroid" and "use a Lagrangian," and I understood neither well enough to use them.</p>
+  <div class="q"><span class="lab">The question</span><p>How do I actually tell whether a problem is a matroid? And what is a Lagrangian? I've never been shown one.</p></div>
+  <h2>A matroid is a property of the constraint</h2>
+  <p>This was the first thing to unlearn. I had been choosing between "matroid" and "not matroid" by looking at the objective. The matroid question has nothing to do with the objective. It's about the rule that says which subsets are allowed.</p>
+  <p>A useful fact makes it testable: in a matroid, every maximal allowed set (one you can't add anything else to) has the same size. So if you can find two maximal sets of different sizes, it isn't a matroid, full stop. Take items of weight 1, 1 and 3 with a capacity of 3. Take the two 1s first: weight 2, and the 3 won't fit, so that set is maximal with 2 items. Take the 3 first: nothing else fits, so that set is maximal with 1 item. Two sizes, not a matroid. That's why a weight budget with unequal weights has no simple greedy solution.</p>
+  <p>When the constraint <em>is</em> a matroid, the payoff is large: sort by the raw value of each item and add it whenever the set stays allowed. That's exactly optimal, for any values. The classic case is "no cycles" in a graph, which is why Kruskal's algorithm for spanning trees works.</p>
+  <h2>A Lagrangian is a price on the budget</h2>
+  <p>When the matroid test fails and there's a single budget, the Lagrangian is the next tool. I asked for it built from scratch, and it turned out to be one idea. The problem is: maximize <span class="m">Σ c<sub>i</sub>x<sub>i</sub></span> subject to <span class="m">Σ a<sub>i</sub>x<sub>i</sub> ≤ B</span>. The budget is the only thing tying the items together. So replace the hard limit with a price <span class="m">λ</span> per unit of budget used, and give back <span class="m">λB</span> for the budget you were handed:</p>
+  <div class="eq">L(x, λ) = Σ (c<sub>i</sub> − λa<sub>i</sub>) x<sub>i</sub> + λB</div>
+  <p>With the price fixed, every item decides on its own: include it if <span class="m">c<sub>i</sub> − λa<sub>i</sub> &gt; 0</span>, which is the same as <span class="m">c<sub>i</sub>/a<sub>i</sub> &gt; λ</span>. Each item switches on at its own ratio. So as the price falls, items switch on in ratio order, and you don't need to know the final price to know the order. That's where "sort by value per weight" actually comes from. Using the items from part 1:</p>
+  <div class="tbl"><table>
+    <thead><tr><th>Price λ</th><th>A (ratio 6)</th><th>B (ratio 5)</th><th>D (ratio 4)</th></tr></thead>
+    <tbody>
+      <tr><td class="num">5.5</td><td class="good">in</td><td>out</td><td>out</td></tr>
+      <tr><td class="num">4.5</td><td class="good">in</td><td class="good">in</td><td>out</td></tr>
+      <tr><td class="num">3.5</td><td class="good">in</td><td class="good">in</td><td class="good">in</td></tr>
+    </tbody>
+  </table></div>
+  <p>This also explains why problems with two budgets have no simple key. With two prices, an item's net value is <span class="m">c<sub>i</sub> − λ<sub>1</sub>a<sub>i</sub> − λ<sub>2</sub>b<sub>i</sub></span>, and whether it beats another item depends on the balance between the two prices, which depends on the whole input. The ranking can flip. That's a different mathematical situation, not a key nobody has found yet.</p>
+  <h2>Key versus strategy</h2>
+  <div class="q"><span class="lab">The question</span><p>Isn't the matroid really telling me the strategy, not the key?</p></div>
+  <p>Yes, and seeing that exposed an asymmetry between the two cases.</p>
+  <ul><li><strong>Matroid:</strong> the key is trivial, just the raw value. All the real work is confirming the constraint has the right structure.</li><li><strong>Lagrangian:</strong> the key takes real derivation (the ratio). But the strategy is only exact when you're allowed to take a fraction of an item. With the items above and capacity 50, taking A and B whole and two-thirds of D gives 240, the best possible fractional answer. Whole items only, the true best is 220. The ratio key is right; turning it into a whole-item answer is where exactness is lost.</li></ul>
+  <h2>Stop, or skip and keep going?</h2>
+  <div class="q"><span class="lab">The question</span><p>For whole items, when the next item in ratio order doesn't fit, should I stop there or skip it and keep checking smaller ones?</p></div>
+  <p>A small example settles which is better. Items worth 9 (weight 5), 10 (weight 6) and 1 (weight 1), capacity 6, in ratio order. Stopping at the first item that doesn't fit gets 9. Skipping it and continuing picks up the weight-1 item too and gets 10.</p>
+  <p>That's not luck. Both rules make identical choices until the first item that doesn't fit. After that point, stopping gives up entirely, while skipping can only find more. So skipping is never worse, on any input. A check across 50,000 random inputs found no exceptions. There's no "try both and pick the better one"; always skip and continue.</p>
+  <p>But winning that comparison doesn't make it exact. On the part 1 items at capacity 50, skip-and-continue takes A and B for 160, while the best is 220. What it guarantees is at least half of the best answer, if you also compare against the single most valuable item. It's exact only when all weights are equal, because then the budget is just "pick any <span class="m">k</span> items," which is a matroid in disguise.</p>
+  <h2>Does subset greedy reduce to ordering greedy?</h2>
+  <div class="q"><span class="lab">The question</span><p>Decision DP can always be simulated by exploration DP. Can decision greedy always be simulated by exploration greedy, even if inefficiently?</p></div>
+  <p>Not in the same sense. DP can switch forms because it searches the full space either way. Greedy isn't a search; it's a proof that one path is enough, and a proof that works for subsets doesn't imply one exists for orderings. What you do see in practice is that a working subset greedy <em>looks</em> like two layers: a sort (order the candidates by the key) followed by a filter (walk them and include each if the set stays allowed). Kruskal's is exactly that. And when subset greedy fails because the problem genuinely needs more than one number of state, the sort-based version fails for the same reason.</p>
+  <h2>Where the data structures come from</h2>
+  <div class="q"><span class="lab">The question</span><p>So in an ordering problem T is always one number, but in a subset problem the strategy can use a data structure?</p></div>
+  <p>Close, with one correction. The matroid property itself is proven once, on paper. A data structure never checks it at runtime. What a data structure does is run the "is this still allowed?" check quickly, and whether you need one depends on which kind of matroid you're in:</p>
+  <div class="tbl"><table>
+    <thead><tr><th>Constraint</th><th>Check</th><th>Needs</th></tr></thead>
+    <tbody>
+      <tr><td>Plain budget, equal weights</td><td>Does it fit?</td><td>One number</td></tr>
+      <tr><td>No cycles in a graph</td><td>Does this edge close a cycle?</td><td>Union-find</td></tr>
+      <tr><td>Each item matched to a slot or container it fits</td><td>Can it still be matched?</td><td>Union-find or a heap</td></tr>
+    </tbody>
+  </table></div>
+  <p>That last row is the deadline problem from part 3: the heap was running this check, not tracking the state of a sequence.</p>
+  <div class="note"><span class="lab">Carried forward</span><p>For subsets: test the constraint first. If maximal sets can differ in size, it's not a matroid, so go to the Lagrangian (one budget) or beyond. If it's a matroid, sort by raw value and add whenever the set stays allowed. For whole items under a budget, always skip and continue, and remember that's an approximation.</p></div>
+  <nav class="pn"><a href="#ch3"><small>Previous</small><span>When the state needs a data structure</span></a><a class="next" href="#ch5"><small>Next</small><span>Matching problems, archetype 3</span></a></nav>
+</article>
+
+<!-- ============ CH5 ============ -->
+<article id="ch5" data-page data-part="Part 5 of 7" hidden>
+  <p class="kicker">Part 5 · A Structured Approach to All (Most) Greedy Problems</p>
+  <h1>Matching problems, archetype 3</h1>
+  <p class="dek">When the answer is a set of pairs, the swap test has nothing to hold on to. A different proof takes over, and it has a precondition.</p>
+  <div class="byline"><span>~9 min read</span></div>
+  <figure>
+  <svg viewBox="0 0 680 190" role="img" aria-label="A sorted row of weights with two pointers, lo and hi, and arcs pairing items from the two ends">
+    <g>
+      <rect class="f-soft" x="40" y="80" width="600" height="46" rx="3"/>
+      <g class="svgt f-ink" text-anchor="middle" font-size="15">
+        <text x="80" y="108">1</text><text x="160" y="108">2</text><text x="240" y="108">2</text><text x="320" y="108">3</text><text x="400" y="108">4</text><text x="480" y="108">5</text><text x="560" y="108">6</text>
+      </g>
+    </g>
+    <g fill="none" stroke-width="2.5">
+      <path class="s-acc" d="M80 78 C 80 20, 560 20, 560 78"/>
+      <path class="s-acc" d="M160 78 C 160 40, 480 40, 480 78"/>
+      <path class="s-mut" stroke-dasharray="5 4" d="M240 78 C 240 58, 400 58, 400 78"/>
+    </g>
+    <text class="svgt f-acc" x="80" y="150" text-anchor="middle" font-weight="600">lo →</text>
+    <text class="svgt f-acc" x="560" y="150" text-anchor="middle" font-weight="600">← hi</text>
+    <text class="svgt f-mut" x="340" y="175" text-anchor="middle">pair the extremes if they fit; otherwise the heavy one goes alone</text>
+  </svg>
+</figure>
+  <p>The first problem that didn't fit anywhere was about boats. Each boat holds at most two people with a combined weight under a limit; find the fewest boats. I framed it as an ordering problem: line everyone up, and consecutive people who fit share a boat. Then I ran the swap test.</p>
+  <div class="q"><span class="lab">The question</span><p>When I swap two people, the lighter-first order costs less but leaves less freedom for whoever comes next. Cost and freedom point in opposite directions, so the swap test doesn't give me a clear answer. Honestly, if I hadn't seen this problem before, I'd have gone to DP. What went wrong?</p></div>
+  <p>Nothing went wrong with the test. It was reporting, correctly, that the problem has a different shape. The number of boats doesn't depend on the order you list them in. The output is a set of pairs, and "swap two neighbours" has nothing to hold on to.</p>
+  <p>Cost and freedom pulling apart is the same signature that showed up for multi-budget problems in part 4: two things to trade off with no fixed exchange rate. It's the swap test telling you that you're in the wrong category.</p>
+  <h2>The proof that does work</h2>
+  <p>Look at the extremes instead of neighbours. Let <span class="m">H</span> be the heaviest person and <span class="m">L</span> the lightest. Everything rests on one small lemma:</p>
+  <blockquote>Replacing someone in a valid arrangement with a lighter person never makes it invalid.</blockquote>
+  <p>That's true because a lighter person only lowers a sum that has to stay under a limit. Now two cases:</p>
+  <ul><li><strong><span class="m">H + L</span> is over the limit.</strong> <span class="m">H</span> can't even share with the lightest person, so <span class="m">H</span> can't share with anyone. <span class="m">H</span> rides alone in every solution. Remove <span class="m">H</span> and solve the rest.</li><li><strong><span class="m">H + L</span> fits.</strong> Take any best solution. If <span class="m">H</span> shares with someone else, call them <span class="m">p</span>, swap <span class="m">p</span> and <span class="m">L</span>. <span class="m">L</span> is at least as light as <span class="m">p</span>, so <span class="m">H</span>'s boat is still fine, and by the lemma <span class="m">p</span> fits wherever <span class="m">L</span> used to be. Nothing got worse, so some best solution pairs <span class="m">H</span> with <span class="m">L</span>. Remove both and solve the rest.</li></ul>
+  <p>Peel off the extremes, repeat. Sort once and walk two pointers inward, and you have the familiar two-pointer algorithm, derived rather than remembered. A brute-force check across thousands of small inputs agreed with it every time.</p>
+  <h2>Don't rename things to make them fit</h2>
+  <div class="q"><span class="lab">The question</span><p>My version of the rule was "take the next person and pair them with the heaviest remaining person who still fits." That needs to look ahead over everyone left, so it isn't a function of T and the current item. Should separability be widened to allow that?</p></div>
+  <p>The tempting answer is to call the state <span class="m">(lo, hi)</span>, the two pointer positions, and say the rule is separable in that. But that's taking an algorithm you already know and inventing a state so the vocabulary still applies. It explains nothing, because the state was chosen to make the claim true.</p>
+  <p>The honest version: separability and block invariance don't generate the two-pointer strategy. This is a different proof shape, extremes plus a substitution lemma, and it's fine for it to be different. The "look ahead for the best partner" worry also goes away on its own: after sorting, repeatedly comparing just the two ends finds that partner automatically. It looks like lookahead, but it's a simple rule repeated.</p>
+  <h2>When "sort, then two pointers" is enough</h2>
+  <div class="q"><span class="lab">The question</span><p>So every matching problem is just: sort by the key, then two pointers?</p></div>
+  <p>Only when one condition holds, and it has to be checked: <strong>compatibility has to be a threshold on the sorted key</strong>. If a person fits with some partner, they fit with every lighter partner too. That's what makes the valid partners for anyone a contiguous run of the sorted list, so two pointers moving inward can't miss anything. Two different ways this breaks:</p>
+  <ul><li><strong>Items carry different values.</strong> Two gems both weigh 5; one is worth 1, the other 100; there's one bag that holds 5. Matching by fit alone takes whichever gem it meets first and might score 1. Two pointers can check whether a pair fits, but they have no way to compare payoffs. That problem needs the subset machinery from part 4: sort by value and check whether each item can still be matched.</li><li><strong>Compatibility is arbitrary.</strong> Person A can only do job 1, person B only job 2, person C any of jobs 1–3. There's no number you can assign to people and jobs that turns this into "fits if above a line." That's general matching, which is solved by augmenting paths, a separate family that is neither greedy nor DP.</li></ul>
+  <p>A problem "feeling greedy" is a good reason to <em>try</em> two pointers first. It isn't evidence they'll work. The check is whether compatibility can be written as one number on each side compared against the other.</p>
+  <div class="note"><span class="lab">A small bug worth remembering</span><p>The two-pointer loop should run <code>while lo &lt;= hi</code>, not <code>lo &lt; hi</code>. Each step places one person, so the loop has to run when exactly one is left. A strict <code>&lt;</code> is for loops that consume two elements per step, like reversing an array in place.</p></div>
+  <div class="note"><span class="lab">Carried forward</span><p>For pairings: peel off extremes and use a substitution lemma. It reduces to sort plus two pointers only when compatibility is a threshold on the key. If items have values, go back to subset methods; if compatibility is arbitrary, it's outside greedy altogether.</p></div>
+  <nav class="pn"><a href="#ch4"><small>Previous</small><span>Decision greedy: matroids and the Lagrangian</span></a><a class="next" href="#ch6"><small>Next</small><span>The fourth archetype and its honest limits</span></a></nav>
+</article>
+
+<!-- ============ CH6 ============ -->
+<article id="ch6" data-page data-part="Part 6 of 7" hidden>
+  <p class="kicker">Part 6 · A Structured Approach to All (Most) Greedy Problems</p>
+  <h1>The fourth archetype and its honest limits</h1>
+  <p class="dek">Some "greedy" problems have no sequence of choices at all. They're a bound, a construction, and a check that the two meet.</p>
+  <div class="byline"><span>~9 min read</span></div>
+  <figure>
+  <svg viewBox="0 0 680 210" role="img" aria-label="Bars of varying height under a dashed lower-bound line; one construction bar touches the line exactly">
+    <line class="s-mut" x1="50" y1="185" x2="640" y2="185" stroke-width="1.5"/>
+    <line class="s-acc" x1="50" y1="70" x2="640" y2="70" stroke-width="2.5" stroke-dasharray="8 5"/>
+    <text class="svgt f-acc" x="55" y="60">lower bound every solution must respect</text>
+    <rect class="f-mut" x="90" y="40" width="50" height="145"/>
+    <rect class="f-mut" x="190" y="55" width="50" height="130"/>
+    <rect class="f-mut" x="290" y="30" width="50" height="155"/>
+    <rect class="f-acc" x="410" y="70" width="50" height="115"/>
+    <rect class="f-mut" x="530" y="48" width="50" height="137"/>
+    <text class="svgt f-ink" x="435" y="203" text-anchor="middle">construction</text>
+    <text class="svgt f-mut" x="215" y="203" text-anchor="middle">other solutions</text>
+  </svg>
+</figure>
+  <p>Two problems kept refusing to fit the first three categories. In one, each business card can be rotated, and you want the smallest rectangular wallet that holds every card. In the other, tasks labelled with letters must be scheduled so the same letter is always at least <span class="m">n</span> steps apart, idling if needed, and you want the shortest schedule. Nothing is excluded, nothing is paired, and the order doesn't come from a swap argument.</p>
+  <div class="q"><span class="lab">The question</span><p>Every item is used, and the objective is a product of maxes, or a length forced by spacing rules. There's no clear key and the matroid and Lagrangian methods don't apply. How do these fit?</p></div>
+  <h2>A bound and a construction</h2>
+  <p>The technique here is different in kind: derive an inequality that <em>every</em> valid solution must satisfy, however clever, and then show one specific solution that meets it exactly. Nothing can beat the bound, and your construction reaches it, so it's optimal. There's no swap and no exchange.</p>
+  <p><strong>The wallet.</strong> Call each card's longer side <span class="m">a<sub>i</sub></span> and shorter side <span class="m">b<sub>i</sub></span>. A card fits in a wallet, in some orientation, exactly when the wallet's longer side is at least <span class="m">a<sub>i</sub></span> and its shorter side is at least <span class="m">b<sub>i</sub></span>. That has to hold for every card, so:</p>
+  <div class="eq">area ≥ max<sub>i</sub>(a<sub>i</sub>) · max<sub>i</sub>(b<sub>i</sub>)</div>
+  <p>Rotate every card so its long side is horizontal, and the wallet with exactly those two maxes holds everything. Bound met; done. A comparison against trying all <span class="m">2<sup>n</sup></span> orientations agreed on every test.</p>
+  <p><strong>The task spacing.</strong> Let <span class="m">F</span> be the highest count of any single letter, and let the number of letters that tie for it be the "tied" count. The most frequent letter needs <span class="m">F − 1</span> gaps of <span class="m">n + 1</span> slots between its copies, and every tied letter needs a slot in the final row too. So the schedule is at least <span class="m">(F − 1)(n + 1)</span> plus the tied count, and never shorter than the number of tasks. Fill rows in that frame and it's always reachable. An exact search agreed on every case.</p>
+  <h2>Is there a systematic way to find bounds?</h2>
+  <div class="q"><span class="lab">The question</span><p>If this is really about finding a lower or upper bound, is there a systematic way to find those, like a set of inequalities to try, instead of memorizing each solution and working backwards?</p></div>
+  <p>Four tools suggest themselves, each matched to what had just worked:</p>
+  <ul><li><strong>Take the max of each item's own requirement.</strong> (The wallet.)</li><li><strong>Pigeonhole:</strong> more things need slots than there are slots. (The task spacing.)</li><li><strong>Averaging:</strong> a total split across <span class="m">m</span> places puts at least total ÷ <span class="m">m</span> in one of them.</li><li><strong>Linear-programming relaxation:</strong> solve the fractional version for a bound, the same machinery as the Lagrangian.</li></ul>
+  <p>To test averaging, we took jobs split across identical machines, where the busiest machine can't finish before the biggest job or the average load. A simple greedy met that bound in only 879 of 2,000 random cases, and was up to 1.41 times it in the rest. Some of that gap is the greedy falling short and some is the bound being loose; with those two numbers alone you can't tell which. The rule that came out of it:</p>
+  <blockquote>When the construction meets the bound exactly, you have a proof. When it only comes close, you have an approximation guarantee. Label them differently.</blockquote>
+  <p>But is this list general, or just fitted to the examples in front of me? Being honest, it was fitted. There are plenty of other bound techniques (double counting, adversary arguments, counting outcomes, the rearrangement inequality, convexity), and unlike matroids there's no theorem that tells you which one a new problem needs. The four tools are worth trying. They aren't a procedure.</p>
+  <h2>So it's a math problem with an extra step</h2>
+  <div class="q"><span class="lab">The question</span><p>So for this category, I'm solving a math problem first and then building a solution from it? It's just a math problem with one extra step?</p></div>
+  <p>Yes. But my first explanation of what makes it different was wrong. I said this category is special because each item's decision depends only on the item itself. That's true of every category: in every example from parts 2–5, the sort key was a function of the item alone.</p>
+  <p>The real difference is in the <em>strategy</em>, not the key. The first three categories walk through sorted items while carrying a running state, and each decision depends on what earlier items did: elapsed time grows, capacity shrinks, pointers move inward. Here there is no walk. The answer is an aggregate over all items, computed the same way in any order. Shuffling the cards and recomputing the wallet gives the same area every time. Feed a wrong order to the interval-points algorithm from part 2 and it gives a wrong answer.</p>
+  <p>That also connects back to part 2's "unconditional aggregation": a sum or max that ignores order. In an ordering problem, that aggregate is a running state that gates the next decision. Here it isn't gating anything. It <em>is</em> the answer.</p>
+  <div class="note"><span class="lab">Carried forward</span><p>Rows 1–3 share one family: a sorted walk with a running state, proven by a swap, an exchange, or a substitution. Row 4 is different in kind: a bound plus a construction, with no walk. Once you're there, you're doing general math, and the discipline is checking that the construction meets the bound exactly.</p></div>
+  <nav class="pn"><a href="#ch5"><small>Previous</small><span>Matching problems, archetype 3</span></a><a class="next" href="#ch7"><small>Next</small><span>Refinements that made the framework usable</span></a></nav>
+</article>
+
+<!-- ============ CH7 ============ -->
+<article id="ch7" data-page data-part="Part 7 of 7" hidden>
+  <p class="kicker">Part 7 · A Structured Approach to All (Most) Greedy Problems</p>
+  <h1>Refinements that made the framework usable</h1>
+  <p class="dek">Four questions that turned a pile of insights into a checklist, and the checklist itself.</p>
+  <div class="byline"><span>~10 min read</span></div>
+  <figure>
+  <svg viewBox="0 0 680 220" role="img" aria-label="A funnel narrowing through four stages labelled freedom, shape, test and prove">
+    <path class="f-soft" d="M60 20 H620 L520 80 H160 Z"/>
+    <path class="f-soft" d="M160 86 H520 L460 136 H220 Z"/>
+    <path class="f-soft" d="M220 142 H460 L420 180 H260 Z"/>
+    <rect class="f-acc" x="280" y="186" width="120" height="28" rx="3"/>
+    <g class="svgt f-ink" text-anchor="middle">
+      <text x="340" y="55">is there anything to optimize?</text>
+      <text x="340" y="116">what shape is the output?</text>
+      <text x="340" y="166">run that shape's test</text>
+    </g>
+    <text class="svgt f-bg" x="340" y="205" text-anchor="middle" font-weight="600">key or proof</text>
+  </svg>
+</figure>
+  <p>By part 6, the pieces were there, but they were scattered across corrections. I wrote them into a step-by-step procedure, and the last stretch of the work was about finding what was still wrong with it.</p>
+  <h2>The key is a function of the item alone</h2>
+  <div class="q"><span class="lab">The question</span><p>My draft says the key is "usually a function of (T, k), but in most cases a function of k." Is that right?</p></div>
+  <p>It was too cautious. Going back through every example (weight over time, due date, right end point, edge weight, value over weight, a person's weight, a card's two sides, a gem's value), the key is a function of the item alone in every single case. There's a reason: a sort key that depended on a running state couldn't be computed before you start sorting.</p>
+  <p><span class="m">T</span> still matters, but in two other places: in the <em>proof</em> that the key is right, and in the <em>strategy</em> that walks the sorted items. If <span class="m">T</span> shows up inside a key formula, the derivation has probably gone wrong.</p>
+  <h2>Degrees of freedom</h2>
+  <p>One problem forced a new first step. A row of light bulbs, each switch flipping its bulb and its neighbours: find the fewest presses to reach a target pattern. It looked like it might be a row-4 bound problem.</p>
+  <div class="q"><span class="lab">The question</span><p>You said to check "degrees of freedom" before reaching for row 4. What does that mean?</p></div>
+  <p>Count how many genuinely independent choices a solution has. Fix an early choice and see whether everything after it becomes forced. For the switches, once you decide whether to press the first switch, the first bulb can only be fixed by the second switch, which forces it, which forces the third, and so on. However many bulbs there are, there are exactly two possible solutions. There's nothing to optimize, just two cases to compute.</p>
+  <p>Compare the wallet, where every card's rotation is a free choice: <span class="m">2<sup>n</sup></span> real candidates, which the bound narrows to one. Every genuine greedy problem starts with a space that grows with the input, and the proof collapses it. If the space stays constant, it's a simulation, not greedy. But a large space isn't enough on its own either: it might still turn out to need DP, or be one of the hard problems with no efficient exact answer.</p>
+  <h2>The quick matroid test, and its blind spot</h2>
+  <div class="q"><span class="lab">The question</span><p>Building two maximal sets and comparing their sizes sounds like more work than just trying the greedy. Can I simply sort ascending once and descending once and compare?</p></div>
+  <p>First, the effort question. Checking a greedy on the one example in the problem statement is quick but tells you almost nothing; several formulas I tried passed a hand check and then failed a stress test. A real stress test (write the greedy, write a brute force, compare over thousands of random inputs) is more work than the two-pass check, which is a few lines of arithmetic.</p>
+  <p>Second, the two passes. The check is lopsided. If the two maximal sets have different sizes, it's definitely not a matroid. If they have the <em>same</em> size, that proves nothing, because two passes only sample the possibilities. We built a case that fools it: a path of four points a–b–c–d with edges ab, bc, cd, where the rule is that chosen edges can't share an endpoint. Both passes find {ab, cd}, size 2. But {bc} on its own is also maximal, with size 1. Not a matroid, and the quick check missed it.</p>
+  <p>I found "identify the exact class of matroid" impractical for contest-style problems, and asked for a firmer recommendation. Where we landed:</p>
+  <ul><li><strong>Different sizes:</strong> trust it, and go to the Lagrangian.</li><li><strong>Same size:</strong> proceed as a matroid, treat it as a hypothesis, and let the brute-force stress test you'd run anyway confirm it. For easy and medium problems, that confirmation can usually be skipped.</li><li><strong>Except:</strong> when the items are pairs and the rule is "no shared endpoint," the exact shape that fooled the test, don't skip it.</li></ul>
+  <h2>Do people really do all this?</h2>
+  <div class="q"><span class="lab">The question</span><p>This is a lot. Do competitive programmers actually derive greedy solutions like this, or do they memorize patterns?</p></div>
+  <p>Mostly they recognize patterns, and they check them by stress-testing against a brute force, not by proving them under time pressure. What separates reliable recognition from superstition is having derived each pattern once, so you know <em>why</em> it works and can tell when a variation breaks it.</p>
+  <p>Greedy really doesn't have DP's single template, and that isn't a gap in the framework. DP is organized brute force, so correctness comes free once the state is right. Greedy's shortcut always needs its own proof, and which proof depends on the shape of the output. The four archetypes are a compact record of those derivations. If you keep one habit, keep this question: <em>is the output an order, a subset, a set of pairs, or an assignment of everything?</em></p>
+  <h2>The framework</h2>
+  <p>Three checks apply everywhere:</p>
+  <ul><li><strong>Separability:</strong> each decision depends only on a compact state <span class="m">T</span> and the current item, with no scanning ahead.</li><li><strong>The key is a function of the item alone.</strong> <span class="m">T</span> belongs to the proof and the strategy.</li><li><strong>Verify</strong> anything non-trivial against a brute force before trusting it.</li></ul>
+  <p>And the procedure, in order:</p>
+  <ol class="checklist">
+  <li><b>0</b>Count degrees of freedom. If free choices grow with input size, there's a real optimization (it may still be DP or hard). If they stay constant, it's a simulation, not greedy.</li>
+  <li><b>1</b>The greedy key is a function of the item alone.</li>
+  <li><b>2</b>Classify by output shape: an order (row 1), a subset (row 2), pairs (row 3), or an assignment of everything (row 4).</li>
+  <li><b>2.1</b>A non-linear objective with no numeric per-item key suggests row 4.</li>
+  <li><b>2.2</b>If it looks like an order but the strategy needs a data structure rather than one number, suspect row 2. Confirm by checking whether different valid orders of the same subset give the same objective.</li>
+  <li><b>2.3</b>If it looks like pairing but two pointers don't have enough information to decide (for example, items carry values), suspect another row.</li>
+  <li><b>3.1</b>Row 1: sort by the key and build the order while carrying a scalar <span class="m">T</span>. The key comes from the swap test: cancellation for sums, domination for bottlenecks.</li>
+  <li><b>3.2</b>Row 2: build maximal subsets with an ascending pass and a descending pass. Different sizes: not a matroid, go to 3.3. Same size: sort by raw value and add each item that keeps the set allowed, using one number or a data structure as the constraint requires. Treat it as a hypothesis; confirm by stress test when items are pairs under a no-shared-endpoint rule.</li>
+  <li><b>3.3</b>Lagrangian, one budget: sort by value over cost. With fractions, fill whole items, take one fraction, stop (exact). Without, skip what doesn't fit and keep going. That's an approximation, exact only when all costs are equal.</li>
+  <li><b>4</b>Row 3: when compatibility is a threshold on the key, sort and use two pointers with <code>while lo &lt;= hi</code>. Otherwise it's general matching, outside greedy.</li>
+  <li><b>5</b>Row 4: derive a bound every solution must satisfy, construct a solution that meets it, and check that it meets it exactly. If it only comes close, you have an approximation, not an exact answer.</li>
+</ol>
+  <p>Outside the framework entirely: matching with arbitrary compatibility (augmenting paths), problems with no efficient exact algorithm at all (greedy may still give a guaranteed approximation), and problems with only a constant number of real choices (just compute them).</p>
+  <p>It isn't the single formula I asked for at the start. Part 1 showed why that formula can't exist. What I have instead is a procedure that, for each kind of problem, either gives me the key with a reason or tells me plainly that greedy isn't the tool.</p>
+  <nav class="pn"><a href="#ch6"><small>Previous</small><span>The fourth archetype and its honest limits</span></a><a class="next" href="#index"><small>Back to</small><span>Series overview</span></a></nav>
+</article>
+
+</main>
+
+<script>
+(function(){
+  var pages = Array.prototype.slice.call(document.querySelectorAll('[data-page]'));
+  var label = document.getElementById('partLabel');
+  function show(scroll){
+    var id = (location.hash || '#index').slice(1);
+    var target = document.getElementById(id);
+    if (!target || !target.hasAttribute('data-page')) target = pages[0];
+    pages.forEach(function(p){ p.hidden = (p !== target); });
+    label.textContent = target.getAttribute('data-part');
+    if (scroll) window.scrollTo(0, 0);
+  }
+  window.addEventListener('hashchange', function(){ show(true); });
+  show(false);
+})();
+</script>
+
+</body>
+</html>

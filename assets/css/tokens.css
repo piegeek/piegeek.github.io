@@ -1,0 +1,50 @@
+/* ------------------------------------------------------------------
+   tokens.css — the one palette, shared by every page.
+
+   Palette lifted from the POLL dApp screenshots: near-black canvas,
+   slate-purple surfaces, bone-white text, yellow accent and a
+   teal -> blue vibrant gradient.
+
+   Loaded before site.css (dashboard) and before post.css (long-form
+   write-ups) so both read the same values. Change a colour here and
+   it changes everywhere; nothing downstream redefines these.
+   ------------------------------------------------------------------ */
+
+:root {
+  --ink:        #232322;
+  --ink-deep:   #1a1a19;
+  --ink-raise:  #2c2c2b;
+
+  --surface:    #46434e;
+  --surface-hi: #55515f;
+  --paper:      #d2d2d0;
+  --paper-dim:  #b9b9b6;
+
+  --accent:     #f5d33f;
+  --accent-dim: #e0bd2c;
+
+  --teal:       #4bc5c2;
+  --blue:       #4a8fc9;
+  --indigo:     #5f7bc0;
+  --mint:       #74bfa0;
+  /* The palette had no negative colour; this is the mint's counterpart
+     at the same lightness, for "this case fails" markers in prose. */
+  --rose:       #dd8a80;
+
+  --text:       #f2f1ee;
+  --text-soft:  #b6b4b0;
+  --text-mute:  #837f7c;
+
+  --line:       rgba(255, 255, 255, 0.09);
+  --line-hi:    rgba(255, 255, 255, 0.18);
+
+  --r-sm: 8px;
+  --r-md: 14px;
+  --r-lg: 20px;
+  --r-xl: 26px;
+
+  --font-sans: 'Poppins', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+
+  color-scheme: dark;
+}

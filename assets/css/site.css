@@ -1,40 +1,11 @@
 /* ------------------------------------------------------------------
    Sang Yeop Han — portfolio dashboard
-   Palette lifted from the POLL dApp screenshots: near-black canvas,
-   slate-purple surfaces, bone-white surfaces, yellow accent and a
-   teal -> blue vibrant gradient.
+
+   Colours, radii and type stacks come from tokens.css, which must be
+   linked before this file. Only dashboard-specific values live here.
    ------------------------------------------------------------------ */
 
 :root {
-  --ink:        #232322;
-  --ink-deep:   #1a1a19;
-  --ink-raise:  #2c2c2b;
-
-  --surface:    #46434e;
-  --surface-hi: #55515f;
-  --paper:      #d2d2d0;
-  --paper-dim:  #b9b9b6;
-
-  --accent:     #f5d33f;
-  --accent-dim: #e0bd2c;
-
-  --teal:       #4bc5c2;
-  --blue:       #4a8fc9;
-  --indigo:     #5f7bc0;
-  --mint:       #74bfa0;
-
-  --text:       #f2f1ee;
-  --text-soft:  #b6b4b0;
-  --text-mute:  #837f7c;
-
-  --line:       rgba(255, 255, 255, 0.09);
-  --line-hi:    rgba(255, 255, 255, 0.18);
-
-  --r-sm: 8px;
-  --r-md: 14px;
-  --r-lg: 20px;
-  --r-xl: 26px;
-
   --ease-flip: cubic-bezier(0.2, 0.8, 0.2, 1);
   --dur-flip: 720ms;
 
@@ -63,7 +34,7 @@ html { scrollbar-gutter: stable; }
 body {
   background: var(--ink);
   color: var(--text);
-  font-family: 'Poppins', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  font-family: var(--font-sans);
   font-size: 15px;
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
@@ -571,6 +542,73 @@ a.employer:focus-visible {
   max-width: 80ch;
 }
 
+/* --- link out to the entry's long-form write-up ---------------------
+   The post is its own page with its own reading layout, so this is a
+   door rather than a preview: enough to say what's behind it, styled
+   as dashboard chrome and not as a sample of the prose. ------------- */
+
+.algo-read {
+  display: block;
+  max-width: 76ch;
+  margin: 0 0 26px;
+  padding: 16px 18px;
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--accent-dim);
+  border-radius: var(--r-md);
+  background: var(--ink-raise);
+  color: inherit;
+  text-decoration: none;
+  transition: border-color 0.2s, background 0.2s, transform 0.2s var(--ease-flip);
+}
+
+.algo-read:hover,
+.algo-read:focus-visible {
+  background: var(--surface);
+  border-color: var(--line-hi);
+  border-left-color: var(--accent);
+  transform: translateY(-2px);
+  outline: none;
+}
+
+.algo-read:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+
+.algo-read-meta {
+  display: block;
+  font-size: 11.5px;
+  letter-spacing: 0.05em;
+  color: var(--text-mute);
+  margin-bottom: 5px;
+}
+
+.algo-read-title {
+  display: block;
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--text);
+}
+
+.algo-read-blurb {
+  display: block;
+  margin-top: 6px;
+  font-size: 13.5px;
+  line-height: 1.6;
+  color: var(--text-soft);
+}
+
+.algo-read-cue {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 11px;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--accent);
+}
+
+.algo-read-cue .chev { transition: transform 0.28s var(--ease-flip); }
+.algo-read:hover .algo-read-cue .chev { transform: translateX(4px); }
+
 /* --- motivation: first-person prose, read at a comfortable measure --- */
 
 .algo-motivation { max-width: 76ch; }
@@ -620,7 +658,7 @@ a.employer:focus-visible {
   margin: 0;
   padding: 12px 14px 14px;
   overflow-x: auto;
-  font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+  font-family: var(--font-mono);
   font-size: 12px;
   line-height: 1.75;
   color: rgba(255, 255, 255, 0.78);
@@ -938,7 +976,7 @@ a.employer:focus-visible {
   position: absolute;
   inset: 0;
   padding: 20px 22px;
-  font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+  font-family: var(--font-mono);
   font-size: 11.5px;
   line-height: 1.85;
   color: rgba(255, 255, 255, 0.72);
